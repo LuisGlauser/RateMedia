@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Bell, BookmarkPlus, ChevronDown, Clapperboard } from "lucide-react";
+import { Bell, BookmarkPlus, Clapperboard } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
-import { signOut } from "@/app/(auth)/actions";
+import { signOut } from "@/app/(site)/(auth)/actions";
 import SearchBar from "./SearchBar";
+import UserMenu from "./UserMenu";
 
 const NAV = [
   { href: "/", label: "Início" },
@@ -88,21 +89,7 @@ export default async function Navbar() {
                 <Bell aria-hidden className="size-4" />
                 <span className="absolute right-1 top-1 size-2 rounded-full bg-secondary shadow-[0_0_8px_#7bd0ff]" />
               </button>
-              <form action={signOut} className="flex items-center gap-1">
-                <span
-                  title={`@${username}`}
-                  className="flex size-8 items-center justify-center rounded-full bg-primary-strong text-xs font-bold text-primary-on"
-                >
-                  {username.slice(0, 2).toUpperCase()}
-                </span>
-                <button
-                  aria-label="Sair"
-                  title="Sair"
-                  className="rounded p-1 text-ink-dim hover:text-ink"
-                >
-                  <ChevronDown aria-hidden className="size-3" />
-                </button>
-              </form>
+              <UserMenu username={username} isAdmin={isAdmin} signOutAction={signOut} />
             </>
           ) : (
             <>

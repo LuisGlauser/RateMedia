@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Bookmark, ChevronDown, Heart, Info, Star, TrendingUp } from "lucide-react";
+import { ChevronDown, Heart, Info, Star, TrendingUp } from "lucide-react";
+import AddToListButton from "@/components/AddToListButton";
 
 export interface SpotlightData {
   id: string | null;
@@ -108,13 +109,7 @@ export default function Hero({ data }: { data: SpotlightData }) {
           </p>
 
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Link
-              href={detailHref}
-              className="inline-flex items-center gap-1 rounded bg-primary px-6 py-2 text-sm font-semibold tracking-[0.14px] text-primary-on shadow-[0_20px_25px_-5px_rgba(208,188,255,0.2)] hover:bg-primary-strong"
-            >
-              <Bookmark aria-hidden className="size-3.5 fill-current" />
-              Adicionar à Lista
-            </Link>
+            <AddToListButton mediaId={data.id} mediaTitle={data.title} />
             <Link
               href={detailHref}
               className="inline-flex items-center gap-1 rounded bg-surface-high px-4 py-2 text-sm font-semibold hover:bg-surface-highest"

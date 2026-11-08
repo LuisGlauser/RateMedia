@@ -20,7 +20,7 @@ export default async function LibraryPage() {
   const rows = (data ?? []) as unknown as Row[];
 
   return (
-    <div className="space-y-10">
+    <div className="container-page space-y-10">
       <h1 className="text-2xl font-bold">Minha biblioteca</h1>
       {USER_STATUSES.map((status) => {
         const group = rows.filter((r) => r.status === status && r.media);

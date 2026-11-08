@@ -1,11 +1,12 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BadgeCheck, BookOpen, Dices, Scroll, Share2, Star, PenLine } from "lucide-react";
+import { ArrowLeft, BadgeCheck, BookOpen, Dices, Scroll, Share2, Star, PenLine, Pencil, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { CAMPAIGN_STATUSES } from "@/lib/constants";
-import { average } from "@/lib/data";
+import { average, canManageCampaign, getViewer } from "@/lib/data";
 import type { Campaign, CampaignReview } from "@/types";
-import { submitCampaignReview } from "../actions";
+import { deleteCampaign, submitCampaignReview } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export default async function CampaignDetail({ params }: { params: Promise<{ id:
     : null;
 
   const dm = c.profiles?.username ?? "Mestre";
+  const canManage = canManageCampaign(await getViewer(), c.author_id);
 
   return (
     <>
@@ -64,7 +66,11 @@ export default async function CampaignDetail({ params }: { params: Promise<{ id:
 
           <div className="grid gap-8 md:grid-cols-[240px_1fr]">
             <div className="relative hidden aspect-[2/3] overflow-hidden rounded-xl bg-surface-high shadow-2xl ring-1 ring-line md:block">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(160,120,255,0.5),transparent_60%)]" />
+              {c.cover_url ? (
+                <Image src={c.cover_url} alt="" fill sizes="240px" className="object-cover" />
+              ) : (
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(160,120,255,0.5),transparent_60%)]" />
+              )}
               <div className="absolute inset-x-0 bottom-0 space-y-1 bg-gradient-to-t from-bg to-transparent p-4 text-center">
                 <Scroll aria-hidden className="mx-auto size-6 text-primary" />
                 <p className="text-[11px] font-bold uppercase tracking-label text-ink-muted">
@@ -134,6 +140,21 @@ export default async function CampaignDetail({ params }: { params: Promise<{ id:
                 <button type="button" aria-label="Compartilhar" className="rounded bg-surface p-2.5 hover:bg-surface-high">
                   <Share2 aria-hidden className="size-4" />
                 </button>
+                {canManage && (
+                  <>
+                    <Link href={`/campanhas/${c.id}/editar`} className="btn-ghost border border-line !px-4 !py-2.5">
+                      <Pencil aria-hidden className="size-4" />
+                      Editar
+                    </Link>
+                    <form action={deleteCampaign}>
+                      <input type="hidden" name="id" value={c.id} />
+                      <button className="btn bg-danger-container/40 !px-4 !py-2.5 text-danger hover:bg-danger-container/70">
+                        <Trash2 aria-hidden className="size-4" />
+                        Excluir
+                      </button>
+                    </form>
+                  </>
+                )}
               </div>
             </div>
           </div>

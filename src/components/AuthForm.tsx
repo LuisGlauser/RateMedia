@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import type { AuthState } from "@/app/(auth)/actions";
+import type { AuthState } from "@/app/(site)/(auth)/actions";
 
 export default function AuthForm({
   action,

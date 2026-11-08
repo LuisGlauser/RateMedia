@@ -146,3 +146,5 @@ create policy "creviews_own_write" on campaign_reviews for all
 
 -- Para tornar alguém admin (rode manualmente):
 -- update profiles set role = 'admin' where username = 'seu_usuario';
+
+-- Telas Busca/Perfil/Admin: aplique também supabase/migrations/002_telas_busca_perfil_admin.sql

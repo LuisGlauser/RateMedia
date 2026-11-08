@@ -17,25 +17,27 @@ Projeto final da disciplina de DevOps (Fatec). Sem Docker nesta fase: foco em de
 ```
 src/
   app/
-    (auth)/          login, cadastro e Server Actions de autenticação
-    obras/[id]/      detalhe da obra: status, progresso, nota e críticas
-    busca/           busca global com filtros (tipo, status, nota)
-    campanhas/       listagem, criação e detalhe com avaliações
-    minha-biblioteca/ obras do usuário por status
-    listas/          listas personalizadas
-    admin/           CRUD de obras e moderação (somente admin)
-  components/        Navbar, SearchBar, MediaCard, CampaignCard, AuthForm...
-  lib/
-    supabase/        clients browser/server
-    external/        integrações Jikan e TMDB
-  middleware.ts      renova sessão e protege rotas privadas
-supabase/schema.sql  tabelas, enums, triggers e políticas RLS
+    (site)/            site público (Navbar + Footer)
+      (auth)/          login, cadastro e Server Actions de autenticação
+      (app)/busca/     busca avançada: filtros, ordenação, paginação
+      (app)/listas/    perfil + minhas listas (e /listas/[id])
+      (app)/minha-biblioteca/
+      obras/[id]/      detalhe da obra: status, progresso, nota e críticas
+      campanhas/       listagem, criação e detalhe com avaliações
+    (admin)/admin/     painel admin com layout próprio (sidebar):
+                       visão geral, catálogo (CRUD), moderação, usuários
+  components/          Navbar, busca/, perfil/, admin/, home/ ...
+  lib/                 supabase/, external/, search.ts, format.ts, data.ts
+  middleware.ts        renova sessão e protege rotas privadas
+supabase/
+  schema.sql                                  tabelas, enums, triggers e RLS
+  migrations/002_telas_busca_perfil_admin.sql gêneros, status editorial, perfil, RLS admin
 ```
 
 ## Rodando localmente
 
 1. `npm install`
-2. Crie um projeto no [Supabase](https://supabase.com) e execute `supabase/schema.sql` no SQL Editor.
+2. Crie um projeto no [Supabase](https://supabase.com) e execute `supabase/schema.sql` e, em seguida, `supabase/migrations/002_telas_busca_perfil_admin.sql` no SQL Editor.
 3. `cp .env.example .env.local` e preencha as variáveis (URL e anon key do Supabase; chave TMDB opcional).
 4. `npm run dev` e acesse http://localhost:3000.
 
@@ -72,5 +74,5 @@ update profiles set role = 'admin' where username = 'seu_usuario';
 - Importação de obras via Jikan/TMDB no painel admin
 - Itens de lista (adicionar obras às listas)
 - Testes E2E e monitoramento
-- Terminar o visual das telas Busca, Perfil/Listas e Painel Admin conforme o Figma
+- Adicionar obras às listas (botão na página da obra)
 - Trocar os ícones por SVGs exportados do Figma e usar as capas reais

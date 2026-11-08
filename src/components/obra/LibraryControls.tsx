@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Bookmark, Minus, PlayCircle, Plus } from "lucide-react";
+import { useParams } from "next/navigation";
+import { Bookmark, ListPlus, Minus, PlayCircle, Plus } from "lucide-react";
+import AddToListButton from "@/components/AddToListButton";
 
 export interface StatusOption {
   value: string;
@@ -24,6 +26,9 @@ export default function LibraryControls({
   progressLabel: string;
 }) {
   const [value, setValue] = useState(progress);
+  // A rota /obras/[id] fornece o id da obra para o modal "Adicionar à lista".
+  const params = useParams<{ id?: string }>();
+  const mediaId = typeof params?.id === "string" ? params.id : null;
   const clamp = (n: number) => Math.max(0, total ? Math.min(total, n) : n);
   const pct = total ? Math.round((value / total) * 100) : 0;
 
@@ -80,10 +85,19 @@ export default function LibraryControls({
         ) : null}
       </div>
 
-      <button className="btn-primary !py-1.5 !text-xs md:ml-auto">
-        <Bookmark aria-hidden className="size-3.5" />
-        Salvar na biblioteca
-      </button>
+      <div className="flex items-center gap-2 md:ml-auto">
+        <AddToListButton
+          mediaId={mediaId}
+          className="inline-flex items-center gap-1 rounded bg-surface-high px-3 py-1.5 text-xs font-semibold hover:bg-surface-highest"
+        >
+          <ListPlus aria-hidden className="size-3.5" />
+          Adicionar à lista
+        </AddToListButton>
+        <button className="btn-primary !py-1.5 !text-xs">
+          <Bookmark aria-hidden className="size-3.5" />
+          Salvar na biblioteca
+        </button>
+      </div>
     </form>
   );
 }
