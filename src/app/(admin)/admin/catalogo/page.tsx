@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, PlusCircle, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, PlusCircle, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { mediaStats } from "@/lib/data";
 import { MEDIA_TYPES, PUBLISH_STATUSES } from "@/lib/constants";
@@ -42,7 +42,10 @@ export default async function CatalogPage({
             <h1 className="text-3xl font-extrabold tracking-tight">Gestão do Catálogo Multimídia</h1>
             <p className="text-sm text-ink-muted">Cadastro, edição e curadoria de obras do catálogo.</p>
           </div>
-          <Link href="/admin/catalogo/nova" className="btn-primary gap-2"><PlusCircle aria-hidden className="size-4" /> Cadastrar Nova Obra</Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/admin/catalogo/importar" className="btn-ghost gap-2 border border-line"><Download aria-hidden className="size-4" /> Importar obras</Link>
+            <Link href="/admin/catalogo/nova" className="btn-primary gap-2"><PlusCircle aria-hidden className="size-4" /> Cadastrar Nova Obra</Link>
+          </div>
         </div>
 
         <form method="get" className="flex flex-wrap gap-3">

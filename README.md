@@ -38,7 +38,7 @@ supabase/
 
 1. `npm install`
 2. Crie um projeto no [Supabase](https://supabase.com) e execute `supabase/schema.sql` e, em seguida, `supabase/migrations/002_telas_busca_perfil_admin.sql` no SQL Editor.
-3. `cp .env.example .env.local` e preencha as variáveis (URL e anon key do Supabase; chave TMDB opcional).
+3. `cp .env.example .env.local` e preencha as variáveis (URL e anon key do Supabase; TMDB opcional — veja `.env.example`).
 4. `npm run dev` e acesse http://localhost:3000.
 
 ### Tornar um usuário administrador
@@ -71,7 +71,6 @@ update profiles set role = 'admin' where username = 'seu_usuario';
 
 ## Próximos passos
 
-- Importação de obras via Jikan/TMDB no painel admin
 - Itens de lista (adicionar obras às listas)
 - Testes E2E e monitoramento
 - Adicionar obras às listas (botão na página da obra)
