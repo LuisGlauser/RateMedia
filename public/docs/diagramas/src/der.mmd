@@ -1,0 +1,86 @@
+erDiagram
+  AUTH_USERS ||--|| PROFILES : "1:1 (trigger)"
+  PROFILES ||--o{ LIBRARY_ENTRIES : possui
+  MEDIA ||--o{ LIBRARY_ENTRIES : registrada
+  PROFILES ||--o{ LISTS : cria
+  LISTS ||--o{ LIST_ITEMS : contem
+  MEDIA ||--o{ LIST_ITEMS : aparece
+  PROFILES ||--o{ CAMPAIGNS : autora
+  CAMPAIGNS ||--o{ CAMPAIGN_REVIEWS : recebe
+  PROFILES ||--o{ CAMPAIGN_REVIEWS : escreve
+  PROFILES |o--o{ MEDIA : cadastra
+
+  AUTH_USERS {
+    uuid id PK
+    text email
+    jsonb raw_user_meta_data
+  }
+  PROFILES {
+    uuid id PK,FK
+    text username UK
+    text avatar_url
+    user_role role
+    text bio
+    text location
+    text banner_url
+    timestamptz created_at
+  }
+  MEDIA {
+    uuid id PK
+    media_type type
+    text title
+    text subtitle
+    text synopsis
+    text cover_url
+    int release_year
+    int total_units
+    text_array genres
+    text publish_status
+    text external_source UK
+    text external_id UK
+    uuid created_by FK
+    timestamptz created_at
+  }
+  LIBRARY_ENTRIES {
+    uuid id PK
+    uuid user_id FK
+    uuid media_id FK
+    user_status status
+    numeric rating
+    int progress
+    text review
+    boolean has_spoilers
+    timestamptz updated_at
+  }
+  LISTS {
+    uuid id PK
+    uuid user_id FK
+    text title
+    text description
+    boolean is_public
+    timestamptz created_at
+  }
+  LIST_ITEMS {
+    uuid list_id PK,FK
+    uuid media_id PK,FK
+    int position
+  }
+  CAMPAIGNS {
+    uuid id PK
+    uuid author_id FK
+    text title
+    text synopsis
+    text system
+    text rules
+    campaign_status status
+    text cover_url
+    timestamptz created_at
+  }
+  CAMPAIGN_REVIEWS {
+    uuid id PK
+    uuid campaign_id FK
+    uuid user_id FK
+    numeric rating
+    text comment
+    timestamptz created_at
+  }

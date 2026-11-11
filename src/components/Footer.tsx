@@ -26,6 +26,7 @@ const COLUMNS = [
     title: "Institucional",
     links: [
       ["Sobre o RATEMEDIA", "#"],
+      ["Documentação do Projeto", "/docs"],
       ["API Pública de Metadados", "#"],
       ["Termos de Serviço", "#"],
       ["Privacidade de Dados", "#"],

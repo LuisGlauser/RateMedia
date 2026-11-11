@@ -1,0 +1,28 @@
+flowchart TB
+  subgraph Cliente["Navegador"]
+    UI["React 19<br/>Server + Client Components<br/>Tailwind CSS"]
+  end
+  subgraph Vercel["Vercel (Next.js 15)"]
+    MW["middleware.ts<br/>renova sessão · protege rotas"]
+    RSC["App Router<br/>(site) · (admin)"]
+    SA["Server Actions<br/>auth · obras · listas · campanhas · admin"]
+    LIB["lib/<br/>data · search · external · supabase"]
+  end
+  subgraph Supabase["Supabase"]
+    AUTH["Auth (e-mail/senha)"]
+    PG[("PostgreSQL<br/>RLS + triggers")]
+  end
+  subgraph Ext["APIs externas"]
+    ANI["AniList GraphQL"]
+    JIK["Jikan REST v4"]
+    TMDB["TMDB REST v3"]
+  end
+  UI -- HTTPS --> MW --> RSC
+  UI -- "form action" --> SA
+  RSC --> LIB
+  SA --> LIB
+  LIB -- "@supabase/ssr (cookies)" --> AUTH
+  LIB -- PostgREST --> PG
+  LIB -- fetch + cache --> ANI
+  LIB -- fallback --> JIK
+  LIB --> TMDB

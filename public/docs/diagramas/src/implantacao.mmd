@@ -1,0 +1,10 @@
+flowchart LR
+  DEV["💻 Desenvolvedor"] -- "git push / PR" --> GH["GitHub<br/>repositório"]
+  GH -- "workflow ci.yml" --> CI["GitHub Actions<br/>lint · typecheck · test · build"]
+  GH -- "webhook" --> VC["Vercel Build"]
+  VC --> PREV["Preview<br/>(por PR)"]
+  VC --> PROD["Produção<br/>(branch main)"]
+  PROD --> SB[("Supabase<br/>Auth + Postgres")]
+  PROD --> APIS["AniList · Jikan · TMDB"]
+  DEV -. "docker compose up" .-> DOCK["Container Docker<br/>Next standalone :3000"]
+  DOCK --> SB

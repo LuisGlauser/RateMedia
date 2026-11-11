@@ -1,0 +1,25 @@
+sequenceDiagram
+  autonumber
+  actor U as Usuário
+  participant B as Navegador
+  participant SA as Server Action<br/>signUp / signIn
+  participant AU as Supabase Auth
+  participant DB as PostgreSQL
+  U->>B: Preenche e-mail, senha e username
+  B->>SA: POST formulário (signUp)
+  SA->>SA: valida senha ≥ 6 caracteres
+  SA->>AU: auth.signUp(email, senha, {username})
+  AU->>DB: INSERT auth.users
+  DB->>DB: trigger on_auth_user_created → INSERT profiles
+  AU-->>SA: sessão (cookies)
+  SA-->>B: revalidatePath + redirect("/")
+  Note over U,B: Login posterior
+  U->>B: Informa e-mail e senha
+  B->>SA: POST signIn (next=/rota)
+  SA->>AU: signInWithPassword
+  alt credenciais válidas
+    AU-->>SA: sessão
+    SA-->>B: redirect(next)
+  else inválidas
+    SA-->>B: { error: "E-mail ou senha inválidos." }
+  end

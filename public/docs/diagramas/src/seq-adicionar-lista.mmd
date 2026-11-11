@@ -1,0 +1,26 @@
+sequenceDiagram
+  autonumber
+  actor U as Usuário
+  participant BTN as AddToListButton (client)
+  participant SA as lib/actions/lists
+  participant DB as Supabase (RLS)
+  U->>BTN: Clica "Adicionar à lista"
+  BTN->>SA: getMyListsForMedia(mediaId)
+  SA->>DB: SELECT lists + list_items do usuário
+  DB-->>SA: listas
+  SA-->>BTN: { status: ok, lists[hasMedia] }
+  U->>BTN: Marca uma lista
+  BTN->>SA: setMediaInList(listId, mediaId, true)
+  SA->>SA: valida UUIDs
+  SA->>DB: confere dono da lista
+  SA->>DB: SELECT max(position)
+  SA->>DB: INSERT list_items(position + 1)
+  alt já existia (23505)
+    DB-->>SA: conflito tratado como sucesso
+  end
+  SA-->>BTN: { status: ok }
+  opt nova lista
+    U->>BTN: Digita nome
+    BTN->>SA: createListWithMedia(título, público, mediaId)
+    SA->>DB: INSERT lists → setMediaInList
+  end
