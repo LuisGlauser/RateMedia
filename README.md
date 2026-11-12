@@ -6,17 +6,16 @@
 
 **Acompanhe, avalie e resenhe animes, mangás, séries e filmes — e descubra campanhas de RPG criadas pela comunidade.**
 
-[![CI](https://github.com/LuisGlauser/RateMedia/actions/workflows/ci.yml/badge.svg)](https://github.com/LuisGlauser/RateMedia/actions/workflows/ci.yml)
-![Versão](https://img.shields.io/badge/vers%C3%A3o-0.2.0-7c5cd6)
+[![CI](https://github.com/LuisGlauser/RateMedia/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/LuisGlauser/RateMedia/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/tag/LuisGlauser/RateMedia?label=vers%C3%A3o&color=7c5cd6)](CHANGELOG.md)
 ![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=fff)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?logo=tailwindcss&logoColor=fff)
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=fff)
 ![Vercel](https://img.shields.io/badge/deploy-Vercel-000000?logo=vercel)
-![Docker](https://img.shields.io/badge/Docker-pronto-2496ED?logo=docker&logoColor=fff)
+![Playwright](https://img.shields.io/badge/E2E-Playwright-2EAD33?logo=playwright&logoColor=fff)
 
-[Documentação](#-documentação) · [Funcionalidades](#-funcionalidades) · [Como rodar](#-como-rodar) · [Arquitetura](#-arquitetura) · [Contribuindo](CONTRIBUTING.md) · [Wiki](https://github.com/LuisGlauser/RateMedia/wiki)
+[Sobre](#-sobre) · [Funcionalidades](#-funcionalidades) · [Arquitetura](#️-arquitetura) · [Qualidade](#-qualidade-e-cicd) · [Documentação](#-documentação) · [Wiki](https://github.com/LuisGlauser/RateMedia/wiki)
 
 </div>
 
@@ -24,25 +23,25 @@
 
 ## 📌 Sobre
 
-O **RateMedia** é uma aplicação web no estilo *Letterboxd* que reúne em um só lugar o acompanhamento de **animes, mangás, séries e filmes**. O diferencial é o módulo de **campanhas de RPG de mesa**, que são criadas, divulgadas e avaliadas pela própria comunidade.
+O **RateMedia** reúne em um só lugar o acompanhamento de **animes, mangás, séries e filmes**, no estilo do Letterboxd. O diferencial é o módulo de **campanhas de RPG de mesa**, criadas, divulgadas e avaliadas pela própria comunidade.
 
-Projeto final da disciplina de **DevOps (Fatec)**, com integração contínua no GitHub Actions, deploy contínuo na Vercel, imagem Docker e segurança por *Row Level Security* no PostgreSQL.
+Projeto final da disciplina de **DevOps — Fatec**, construído com integração e entrega contínuas, testes automatizados em quatro níveis, contêiner Docker e segurança aplicada no banco de dados.
 
 ## ✨ Funcionalidades
 
-| Módulo | O que faz |
-| --- | --- |
-| 🔎 **Busca avançada** | Texto, tipo, faixa de nota, gêneros, 4 ordenações e paginação. |
-| 🎬 **Página da obra** | Sinopse, metadados, média da comunidade e críticas com proteção de *spoiler*. |
-| 📚 **Biblioteca pessoal** | Status (quero ver/ler, vendo/lendo, concluído, abandonado), progresso e nota de 1 a 10. |
-| 🗂️ **Listas** | Listas públicas ou privadas; adicionar obras direto da página da obra. |
-| 👤 **Perfil** | Bio, localização, avatar e banner. |
-| 🎲 **Campanhas de RPG** | Criar, editar, avaliar e descobrir mesas (D&D, Tormenta20, Call of Cthulhu…). |
-| 🛡️ **Painel admin** | Métricas, CRUD do catálogo, importação do AniList/Jikan/TMDB, moderação e papéis. |
-| 📖 **Central de documentação** | `/docs` com Markdown, diagramas UML/DER, Word e PDF. |
+| | Módulo | Descrição |
+| --- | --- | --- |
+| 🔎 | **Busca avançada** | Filtros por tipo, nota e gênero, quatro ordenações e paginação |
+| 🎬 | **Página da obra** | Sinopse, metadados, média da comunidade e críticas com proteção de *spoiler* |
+| 📚 | **Biblioteca pessoal** | Status, progresso e nota de 1 a 10 para cada obra |
+| 🗂️ | **Listas e perfil** | Listas públicas ou privadas e perfil personalizável |
+| 🎲 | **Campanhas de RPG** | Publicação, avaliação e descoberta de mesas da comunidade |
+| 🛡️ | **Painel administrativo** | Métricas, curadoria do catálogo, importação do AniList, Jikan e TMDB, moderação e papéis |
+| 📖 | **Central de documentação** | Requisitos, UML, DER, Word e PDF dentro da própria aplicação, em `/docs` |
 
 <details>
 <summary><b>📸 Capturas de tela</b></summary>
+<br />
 
 | Busca | Campanhas |
 | --- | --- |
@@ -56,146 +55,80 @@ Projeto final da disciplina de **DevOps (Fatec)**, com integração contínua no
 
 | Camada | Tecnologias |
 | --- | --- |
-| Front-end | Next.js 15 (App Router, Server Components), React 19, Tailwind CSS, lucide-react |
-| Back-end | Server Actions do Next.js |
-| Dados e autenticação | Supabase (PostgreSQL + Auth e-mail/senha + RLS) |
-| Integrações | AniList (GraphQL), Jikan v4 (MyAnimeList), TMDB v3 |
-| Qualidade | TypeScript, ESLint, Vitest |
-| DevOps | GitHub Actions, Vercel, Docker / Docker Compose |
-
-## 📖 Documentação
-
-A documentação completa fica no próprio site, em **`/docs`**, e no repositório em [`public/docs`](public/docs):
-
-| Formato | Conteúdo |
-| --- | --- |
-| [Markdown](public/docs/md/README.md) | 11 capítulos: visão geral, requisitos, casos de uso, histórias de usuário, arquitetura, modelo de dados, classes, sequência, integrações, DevOps e testes. |
-| [Diagramas](public/docs/diagramas) | Casos de uso, classes, DER, 6 sequências, 2 estados, arquitetura, implantação e navegação (fontes Mermaid em `src/`). |
-| [Word](public/docs/word/RateMedia-Documentacao.docx) | Documento completo e editável. |
-| [PDF](public/docs/pdf/RateMedia-Documentacao.pdf) | Versão para leitura e impressão. |
-
-Guias rápidos estão na [Wiki](https://github.com/LuisGlauser/RateMedia/wiki) (fonte em [`wiki/`](wiki)).
-
-## 🚀 Como rodar
-
-### Pré-requisitos
-
-- Node.js 22+ e npm
-- Uma conta gratuita no [Supabase](https://supabase.com) (opcional: sem ela o site usa dados de demonstração)
-- Chave do [TMDB](https://www.themoviedb.org/settings/api) (opcional, para filmes e séries)
-
-### Passo a passo
-
-```bash
-git clone https://github.com/LuisGlauser/RateMedia.git
-cd RateMedia
-npm install
-cp .env.example .env.local   # preencha as variáveis
-npm run dev                  # http://localhost:3000
-```
-
-No **SQL Editor** do Supabase, execute em ordem:
-
-1. `supabase/schema.sql`
-2. `supabase/migrations/002_telas_busca_perfil_admin.sql`
-3. `supabase/migrations/003_fix_has_spoilers_e_colunas.sql`
-
-Para tornar um usuário administrador:
-
-```sql
-update profiles set role = 'admin' where username = 'seu_usuario';
-```
-
-### Variáveis de ambiente
-
-| Variável | Obrigatória | Descrição |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Para dados reais | URL do projeto Supabase |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Para dados reais | Chave pública *anon* |
-| `TMDB_API_READ_TOKEN` | Não | Token de leitura do TMDB (prioritário) |
-| `TMDB_API_KEY` | Não | Chave v3 do TMDB (alternativa) |
-
-> Nunca coloque a chave `service_role` em nenhum arquivo do projeto.
-
-### Docker
-
-```bash
-docker compose --env-file .env.local up --build   # com Supabase
-docker compose up --build                          # só dados de demonstração
-```
-
-A imagem é *multi-stage* (Next.js `standalone`), roda com usuário sem privilégios e tem *healthcheck*. Detalhes em [DevOps](public/docs/md/10-devops.md).
-
-## 🧪 Scripts
-
-| Comando | Descrição |
-| --- | --- |
-| `npm run dev` | Servidor de desenvolvimento |
-| `npm run build` | Build de produção |
-| `npm start` | Servidor de produção |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | Checagem de tipos |
-| `npm test` | Testes (Vitest) |
-| `scripts/docs/build-docs.sh` | Gera de novo o Word e o PDF da documentação |
+| Aplicação | Next.js 15 (App Router, Server Components, Server Actions), React 19, Tailwind CSS |
+| Dados e autenticação | Supabase — PostgreSQL com Row Level Security e Auth |
+| Integrações | AniList (GraphQL), Jikan (MyAnimeList) e TMDB |
+| Testes | Vitest (unitários e integração), Playwright (E2E), teste de carga em Node |
+| DevOps | GitHub Actions, Vercel, Docker e Docker Compose, Dependabot |
 
 ## 🏗️ Arquitetura
 
 ![Arquitetura](public/docs/diagramas/arquitetura.svg)
 
-```
-src/
-  app/
-    (site)/          site público: home, busca, obras, campanhas, listas, biblioteca, docs
-    (admin)/admin/   painel administrativo
-  components/        componentes de interface
-  lib/               supabase, integrações externas, busca, dados, formatação
-  middleware.ts      sessão e proteção de rotas
-supabase/            schema e migrações (tabelas, enums, triggers, RLS)
-public/docs/         documentação (md, diagramas, word, pdf)
-wiki/                páginas da Wiki do GitHub
-```
+Monólito Next.js em que as páginas consultam o banco no servidor e as alterações passam por Server Actions validadas. As regras de acesso ficam no próprio PostgreSQL (RLS), e as integrações externas têm *cache*, novas tentativas e *fallback* entre provedores.
 
-Mais detalhes: [Arquitetura](public/docs/md/05-arquitetura.md) · [Modelo de dados](public/docs/md/06-modelo-de-dados.md).
+Mais detalhes em [Arquitetura](public/docs/md/05-arquitetura.md), [Modelo de dados](public/docs/md/06-modelo-de-dados.md) e [Diagramas de sequência](public/docs/md/08-diagramas-de-sequencia.md).
 
-## 🔄 CI/CD
+## ✅ Qualidade e CI/CD
+
+Cada *pull request* passa pela pipeline do GitHub Actions antes de chegar à `main`:
 
 ```mermaid
 flowchart LR
-  A[Push / PR] --> B[GitHub Actions<br/>lint · typecheck · testes · build]
-  A --> C[Vercel]
-  C --> D[Preview por PR]
-  C --> E[Produção na main]
+  PR[Pull request] --> Q[Lint · tipos · unitários · integração · build]
+  Q --> E2E[E2E com Playwright]
+  Q --> P[Performance: smoke e carga]
+  E2E --> M[Merge na main]
+  P --> M
+  M --> V[Deploy na Vercel]
 ```
 
-## 🔐 Segurança
+| Nível | Ferramenta | Cobertura |
+| --- | --- | --- |
+| Unitário | Vitest | Regras de negócio: busca, formatação, permissões, clientes das APIs |
+| Integração | Vitest | Server Actions, middleware e camada de dados com Supabase simulado |
+| Ponta a ponta | Playwright | Fluxos reais no navegador: home, busca, filtros, login, campanhas |
+| Performance | Node | Latência p95, vazão e taxa de erros com limites que reprovam a pipeline |
 
-- RLS em todas as tabelas; ações de admin também verificadas no servidor.
-- Entradas sanitizadas (tamanho máximo, URLs só `http(s)`, UUIDs validados, redirecionamentos só para rotas internas).
-- Credenciais apenas em variáveis de ambiente. Veja a [política de segurança](SECURITY.md).
+## 📖 Documentação
+
+| Onde | Conteúdo |
+| --- | --- |
+| [**Wiki**](https://github.com/LuisGlauser/RateMedia/wiki) | Instalação, configuração, testes, deploy, guias de usuário e de administrador, FAQ |
+| [`/docs`](public/docs/md/README.md) | Visão geral, requisitos, casos de uso, histórias de usuário, arquitetura, DER, classes, sequência, integrações, DevOps e testes |
+| [Diagramas](public/docs/diagramas) | 14 diagramas (UML, DER, arquitetura, implantação) com fontes Mermaid |
+| [Word](public/docs/word/RateMedia-Documentacao.docx) · [PDF](public/docs/pdf/RateMedia-Documentacao.pdf) | Documento completo para leitura, impressão e entrega |
+
+> Para rodar o projeto na sua máquina, siga o guia de [Instalação](https://github.com/LuisGlauser/RateMedia/wiki/Instalação) na Wiki.
 
 ## 🗺️ Roadmap
 
-- [x] Busca avançada, biblioteca, listas e perfil
+- [x] Busca, biblioteca, listas e perfil
 - [x] Campanhas de RPG com avaliações
-- [x] Painel admin com importação de APIs externas
-- [x] Docker e CI/CD
+- [x] Painel administrativo com importação de APIs externas
+- [x] Docker, CI/CD e testes em quatro níveis
 - [x] Central de documentação
-- [ ] Testes E2E com Playwright
-- [ ] Monitoramento e alertas
+- [ ] Monitoramento e alertas em produção
+- [ ] Testes de RLS contra um Supabase local
 - [ ] Notificações e feed de atividades
 
 ## 🤝 Contribuindo
 
-Contribuições são bem-vindas! Leia o [guia de contribuição](CONTRIBUTING.md) e o [código de conduta](CODE_OF_CONDUCT.md). O histórico de versões está no [CHANGELOG](CHANGELOG.md).
+Leia o [guia de contribuição](CONTRIBUTING.md) e o [código de conduta](CODE_OF_CONDUCT.md). Vulnerabilidades devem ser reportadas conforme a [política de segurança](SECURITY.md). O histórico de versões está no [CHANGELOG](CHANGELOG.md).
 
-## 👥 Equipe
+## 👥 Contribuidores
 
-| Integrante | GitHub |
-| --- | --- |
-| Luís Felipe Glauser Lucas | [@LuisGlauser](https://github.com/LuisGlauser) |
-| Felipe Ferreira de Souza | — |
-| Arthur Gaspare Camzano | [@Dracon-46](https://github.com/Dracon-46) |
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="https://github.com/LuisGlauser"><img src="https://github.com/LuisGlauser.png" width="88" alt="LuisGlauser" /><br /><b>Luís Felipe Glauser Lucas</b></a><br /><sub>Telas, Supabase e integrações com APIs</sub></td>
+    <td align="center" width="25%"><a href="https://github.com/FelipeFDSDev"><img src="https://github.com/FelipeFDSDev.png" width="88" alt="FelipeFDSDev" /><br /><b>Felipe Ferreira de Souza</b></a><br /><sub>Docker e containerização</sub></td>
+    <td align="center" width="25%"><a href="https://github.com/gabrieldasilva88188"><img src="https://github.com/gabrieldasilva88188.png" width="88" alt="gabrieldasilva88188" /><br /><b>@gabrieldasilva88188</b></a><br /><sub>Testes unitários, integração, E2E e performance</sub></td>
+    <td align="center" width="25%"><a href="https://github.com/Dracon-46"><img src="https://github.com/Dracon-46.png" width="88" alt="Dracon-46" /><br /><b>Arthur Gaspare Camzano</b></a><br /><sub>Documentação e padronização do repositório</sub></td>
+  </tr>
+</table>
+
+Veja todas as contribuições em [Insights → Contributors](https://github.com/LuisGlauser/RateMedia/graphs/contributors).
 
 <div align="center">
-<sub>Projeto acadêmico — Fatec · DevOps</sub>
+<sub>Projeto acadêmico · DevOps · Fatec</sub>
 </div>
