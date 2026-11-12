@@ -15,7 +15,9 @@
 ![Vercel](https://img.shields.io/badge/deploy-Vercel-000000?logo=vercel)
 ![Playwright](https://img.shields.io/badge/E2E-Playwright-2EAD33?logo=playwright&logoColor=fff)
 
-[Sobre](#-sobre) · [Funcionalidades](#-funcionalidades) · [Arquitetura](#️-arquitetura) · [Qualidade](#-qualidade-e-cicd) · [Documentação](#-documentação) · [Wiki](https://github.com/LuisGlauser/RateMedia/wiki)
+### 🌐 [ratemedia.vercel.app](https://ratemedia.vercel.app)
+
+[Site no ar](https://ratemedia.vercel.app) · [Sobre](#-sobre) · [Funcionalidades](#-funcionalidades) · [Arquitetura](#️-arquitetura) · [Qualidade](#-qualidade-e-cicd) · [Documentação](#-documentação) · [Wiki](https://github.com/LuisGlauser/RateMedia/wiki)
 
 </div>
 
@@ -95,7 +97,7 @@ flowchart LR
 | Onde | Conteúdo |
 | --- | --- |
 | [**Wiki**](https://github.com/LuisGlauser/RateMedia/wiki) | Instalação, configuração, testes, deploy, guias de usuário e de administrador, FAQ |
-| [`/docs`](public/docs/md/README.md) | Visão geral, requisitos, casos de uso, histórias de usuário, arquitetura, DER, classes, sequência, integrações, DevOps e testes |
+| [`/docs`](https://ratemedia.vercel.app/docs) | Visão geral, requisitos, casos de uso, histórias de usuário, arquitetura, DER, classes, sequência, integrações, DevOps e testes |
 | [Diagramas](public/docs/diagramas) | 14 diagramas (UML, DER, arquitetura, implantação) com fontes Mermaid |
 | [Word](public/docs/word/RateMedia-Documentacao.docx) · [PDF](public/docs/pdf/RateMedia-Documentacao.pdf) | Documento completo para leitura, impressão e entrega |
 

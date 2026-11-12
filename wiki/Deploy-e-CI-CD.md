@@ -14,6 +14,8 @@ Detalhes em [[Testes]].
 
 ## Vercel
 
+**Produção:** https://ratemedia.vercel.app
+
 1. Importe o repositório em https://vercel.com/new (framework **Next.js**).
 2. Em **Settings → Environment Variables**, cadastre `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e, se quiser, as variáveis do TMDB.
 3. Cada PR gera um preview; o merge na `main` publica em produção.
