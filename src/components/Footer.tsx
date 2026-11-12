@@ -87,7 +87,7 @@ export default function Footer() {
               <span className="size-2 rounded-full bg-secondary" />
               Servidores Operacionais
             </span>
-            <span>v0.1.0</span>
+            <span>v0.2.0</span>
           </p>
         </div>
       </div>

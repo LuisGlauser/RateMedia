@@ -3,7 +3,7 @@
 | Item | Descrição |
 | --- | --- |
 | **Projeto** | RateMedia |
-| **Versão** | 0.1.0 |
+| **Versão** | 0.2.0 |
 | **Disciplina** | DevOps — Fatec |
 | **Tipo** | Aplicação web (SaaS social) |
 | **Repositório** | `LuisGlauser/RateMedia` |
