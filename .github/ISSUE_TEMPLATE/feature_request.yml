@@ -1,0 +1,33 @@
+name: ✨ Sugerir funcionalidade
+description: Proponha uma melhoria ou nova funcionalidade.
+title: "[Feature]: "
+labels: ["enhancement", "triagem"]
+body:
+  - type: textarea
+    id: historia
+    attributes:
+      label: História de usuário
+      description: "Formato: Como <ator>, quero <ação>, para <benefício>."
+      placeholder: Como usuário, quero filtrar a busca por ano, para encontrar lançamentos recentes.
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceitação
+      placeholder: |
+        - Dado ..., quando ..., então ...
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas
+  - type: dropdown
+    id: prioridade
+    attributes:
+      label: Prioridade sugerida
+      options:
+        - Alta
+        - Média
+        - Baixa
