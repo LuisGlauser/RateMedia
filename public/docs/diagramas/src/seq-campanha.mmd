@@ -1,0 +1,22 @@
+sequenceDiagram
+  autonumber
+  actor U as Mestre (usuário)
+  actor J as Jogador (usuário)
+  participant SA as campanhas/actions
+  participant DB as Supabase (RLS)
+  U->>SA: createCampaign(título, sistema, sinopse, regras, status, capa)
+  SA->>SA: campaignFields(): sanitiza, limita tamanho, valida URL
+  SA->>DB: INSERT campaigns (author_id = user.id)
+  DB-->>SA: id
+  SA-->>U: redirect /campanhas/{id}
+  J->>SA: submitCampaignReview(id, nota 0–5, comentário)
+  SA->>DB: UPSERT campaign_reviews on (campaign_id, user_id)
+  DB-->>SA: ok
+  SA-->>J: revalidatePath /campanhas/{id}
+  U->>SA: updateCampaign / deleteCampaign
+  SA->>SA: authorize(): getViewer() + canManageCampaign()
+  alt autor ou admin
+    SA->>DB: UPDATE / DELETE campaigns
+  else outro usuário
+    SA-->>U: operação ignorada
+  end

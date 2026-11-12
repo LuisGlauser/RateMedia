@@ -1,0 +1,12 @@
+stateDiagram-v2
+  [*] --> planned : adicionar à biblioteca
+  planned --> in_progress : começar
+  in_progress --> completed : concluir
+  in_progress --> dropped : abandonar
+  planned --> dropped : desistir
+  dropped --> in_progress : retomar
+  completed --> in_progress : rever / reler
+  completed --> [*]
+  note right of planned : Quero Assistir / Quero Ler
+  note right of in_progress : Assistindo / Lendo
+  note right of completed : Assistido / Lido

@@ -1,0 +1,120 @@
+classDiagram
+  direction LR
+  class Profile {
+    +uuid id
+    +string username
+    +string avatar_url
+    +UserRole role
+    +string bio
+    +string location
+    +string banner_url
+    +datetime created_at
+    +isAdmin() bool
+  }
+  class Media {
+    +uuid id
+    +MediaType type
+    +string title
+    +string subtitle
+    +string synopsis
+    +string cover_url
+    +int release_year
+    +int total_units
+    +string[] genres
+    +PublishStatus publish_status
+    +string external_source
+    +string external_id
+  }
+  class LibraryEntry {
+    +uuid id
+    +UserStatus status
+    +decimal rating
+    +int progress
+    +string review
+    +bool has_spoilers
+    +datetime updated_at
+  }
+  class List {
+    +uuid id
+    +string title
+    +string description
+    +bool is_public
+    +datetime created_at
+  }
+  class ListItem {
+    +int position
+  }
+  class Campaign {
+    +uuid id
+    +string title
+    +string synopsis
+    +string system
+    +string rules
+    +CampaignStatus status
+    +string cover_url
+  }
+  class CampaignReview {
+    +uuid id
+    +decimal rating
+    +string comment
+    +datetime created_at
+  }
+  class ExternalMedia {
+    <<DTO>>
+    +ExternalSource source
+    +string external_id
+    +MediaType type
+    +string title
+    +string[] genres
+  }
+  class ExternalProvider {
+    <<interface>>
+    +search(type, query, limit) ExternalMedia[]
+    +get(type, id) ExternalMedia
+  }
+  class AnilistClient
+  class JikanClient
+  class TmdbClient
+  class ExternalApiError {
+    +int status
+  }
+  class MediaType {
+    <<enumeration>>
+    anime
+    manga
+    series
+    movie
+  }
+  class UserStatus {
+    <<enumeration>>
+    planned
+    in_progress
+    completed
+    dropped
+  }
+  class CampaignStatus {
+    <<enumeration>>
+    recruiting
+    ongoing
+    finished
+    paused
+  }
+
+  Profile "1" --> "0..*" LibraryEntry : possui
+  Media "1" --> "0..*" LibraryEntry : é registrada em
+  Profile "1" --> "0..*" List : cria
+  List "1" *-- "0..*" ListItem : contém
+  Media "1" --> "0..*" ListItem : referenciada por
+  Profile "1" --> "0..*" Campaign : autor
+  Campaign "1" *-- "0..*" CampaignReview : recebe
+  Profile "1" --> "0..*" CampaignReview : escreve
+  Profile "0..1" --> "0..*" Media : cadastra (admin)
+  ExternalProvider <|.. AnilistClient
+  ExternalProvider <|.. JikanClient
+  ExternalProvider <|.. TmdbClient
+  ExternalProvider ..> ExternalMedia : retorna
+  ExternalProvider ..> ExternalApiError : lança
+  ExternalMedia ..> Media : importada como
+  Media --> MediaType
+  LibraryEntry --> UserStatus
+  Campaign --> CampaignStatus

@@ -1,0 +1,20 @@
+sequenceDiagram
+  autonumber
+  actor A as Administrador
+  participant P as /admin/moderacao · /admin/usuarios
+  participant SA as admin/actions
+  participant DB as Supabase (RLS + is_admin())
+  A->>P: Abre painel
+  P->>SA: requireAdmin()
+  SA->>DB: SELECT profiles.role
+  alt não é admin
+    SA-->>P: null (nada é exibido/alterado)
+  else admin
+    A->>SA: clearLibraryReview(id)
+    SA->>DB: UPDATE library_entries SET review = NULL
+    A->>SA: deleteCampaignReview(id)
+    SA->>DB: DELETE campaign_reviews
+    A->>SA: setUserRole(id, admin|user)
+    SA->>SA: impede alterar o próprio papel
+    SA->>DB: UPDATE profiles SET role
+  end

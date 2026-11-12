@@ -1,0 +1,26 @@
+sequenceDiagram
+  autonumber
+  actor A as Administrador
+  participant P as /admin/catalogo/importar
+  participant SA as importExternalMedia()
+  participant EX as lib/external
+  participant API as AniList / Jikan / TMDB
+  participant DB as Supabase
+  A->>P: Pesquisa "Frieren" (tipo anime)
+  P->>EX: searchExternal(anime, q)
+  EX->>API: POST graphql.anilist.co
+  alt AniList indisponível
+    API-->>EX: erro (ExternalApiError)
+    EX->>API: GET api.jikan.moe/v4/anime?q=
+  end
+  API-->>EX: resultados
+  EX-->>P: ExternalMedia[] normalizados
+  A->>P: Clica "Importar"
+  P->>SA: type + source + external_id
+  SA->>DB: requireAdmin()
+  SA->>EX: fetchExternal(type, id, source)
+  EX->>API: busca detalhes (servidor)
+  API-->>EX: dados completos
+  SA->>DB: UPSERT media (ignoreDuplicates)<br/>external_id = "anime:154587"
+  DB-->>SA: ok
+  SA-->>P: redirect ?ok=1

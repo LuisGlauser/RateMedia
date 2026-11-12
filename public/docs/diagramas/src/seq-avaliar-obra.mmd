@@ -1,0 +1,23 @@
+sequenceDiagram
+  autonumber
+  actor U as Usuário
+  participant P as /obras/[id]
+  participant MW as middleware
+  participant SA as saveEntry()
+  participant DB as Supabase (RLS)
+  U->>P: Abre a página da obra
+  P->>DB: SELECT media, library_entries
+  DB-->>P: obra + entradas (média de notas)
+  U->>P: Define status, progresso, nota (1–10) e resenha
+  P->>SA: form action saveEntry(mediaId, formData)
+  SA->>DB: auth.getUser()
+  alt sem sessão
+    SA-->>P: redirect /login?next=/obras/id
+  else autenticado
+    SA->>SA: valida status, progresso ≥ 0, nota/2 (0–5)
+    SA->>DB: UPSERT library_entries on (user_id, media_id)
+    DB->>DB: policy entries_own_write (auth.uid() = user_id)
+    DB-->>SA: ok
+    SA-->>P: revalidatePath(/obras/id, /minha-biblioteca)
+    P-->>U: Página atualizada com nova nota
+  end

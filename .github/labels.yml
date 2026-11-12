@@ -1,0 +1,17 @@
+# Labels padrão do repositório. Crie-as em Issues → Labels (ou com a action
+# EndBug/label-sync) para manter o mesmo padrão nas issues e PRs.
+- { name: bug, color: d73a4a, description: Algo não funciona }
+- { name: enhancement, color: a2eeef, description: Nova funcionalidade ou melhoria }
+- { name: documentation, color: 0075ca, description: Documentação }
+- { name: triagem, color: fbca04, description: Aguardando análise }
+- { name: dependencies, color: 0366d6, description: Atualização de dependências }
+- { name: ci, color: 5319e7, description: GitHub Actions e pipelines }
+- { name: segurança, color: b60205, description: Segurança }
+- { name: good first issue, color: 7057ff, description: Boa para começar }
+- { name: "área: busca", color: c5def5, description: Busca e filtros }
+- { name: "área: obras", color: c5def5, description: Página da obra e biblioteca }
+- { name: "área: campanhas", color: c5def5, description: Campanhas de RPG }
+- { name: "área: admin", color: c5def5, description: Painel administrativo }
+- { name: "prioridade: alta", color: e11d21, description: Prioridade alta }
+- { name: "prioridade: média", color: fbca04, description: Prioridade média }
+- { name: "prioridade: baixa", color: 0e8a16, description: Prioridade baixa }

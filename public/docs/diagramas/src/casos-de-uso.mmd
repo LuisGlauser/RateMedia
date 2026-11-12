@@ -1,0 +1,54 @@
+flowchart LR
+  V(["👤 Visitante"])
+  U(["👤 Usuário autenticado"])
+  A(["🛡️ Administrador"])
+  EXT[["APIs externas<br/>AniList · Jikan · TMDB"]]
+
+  subgraph S["Sistema RateMedia"]
+    UC01(["UC01 Cadastrar conta"])
+    UC02(["UC02 Autenticar-se"])
+    UC03(["UC03 Buscar e filtrar obras"])
+    UC04(["UC04 Visualizar obra"])
+    UC05(["UC05 Gerenciar biblioteca<br/>status e progresso"])
+    UC06(["UC06 Avaliar e resenhar obra"])
+    UC07(["UC07 Gerenciar listas"])
+    UC08(["UC08 Adicionar obra a lista"])
+    UC09(["UC09 Editar perfil"])
+    UC10(["UC10 Visualizar campanhas RPG"])
+    UC11(["UC11 Criar/editar/excluir campanha"])
+    UC12(["UC12 Avaliar campanha"])
+    UC13(["UC13 Gerenciar catálogo CRUD"])
+    UC14(["UC14 Importar obra externa"])
+    UC15(["UC15 Moderar conteúdo"])
+    UC16(["UC16 Gerenciar papéis de usuários"])
+    UC17(["UC17 Encerrar sessão"])
+  end
+
+  V --- UC01
+  V --- UC02
+  V --- UC03
+  V --- UC04
+  V --- UC10
+
+  U --- UC03
+  U --- UC04
+  U --- UC05
+  U --- UC06
+  U --- UC07
+  U --- UC08
+  U --- UC09
+  U --- UC10
+  U --- UC11
+  U --- UC12
+  U --- UC17
+
+  A --- UC13
+  A --- UC14
+  A --- UC15
+  A --- UC16
+  A --- UC11
+
+  UC14 -. usa .-> EXT
+  UC06 -. include .-> UC05
+  UC08 -. extend .-> UC07
+  A -. herda de .-> U

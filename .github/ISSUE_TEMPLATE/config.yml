@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentação
+    url: https://github.com/LuisGlauser/RateMedia/tree/main/public/docs/md
+    about: Requisitos, casos de uso, diagramas e guias do projeto.
+  - name: 🔐 Vulnerabilidade de segurança
+    url: https://github.com/LuisGlauser/RateMedia/security/advisories/new
+    about: Reporte falhas de segurança de forma privada.

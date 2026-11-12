@@ -32,3 +32,61 @@
     @apply mx-auto w-full max-w-6xl px-4 py-8;
   }
 }
+
+/* Conteúdo Markdown da central de documentação (/docs/md). */
+@layer components {
+  .doc-prose {
+    @apply text-[15px] leading-7 text-ink-muted;
+  }
+  .doc-prose h1 {
+    @apply mb-6 text-3xl font-extrabold text-ink;
+  }
+  .doc-prose h2 {
+    @apply mb-3 mt-10 border-b border-line pb-2 text-xl font-bold text-ink;
+  }
+  .doc-prose h3 {
+    @apply mb-2 mt-8 text-lg font-semibold text-primary;
+  }
+  .doc-prose p,
+  .doc-prose ul,
+  .doc-prose ol,
+  .doc-prose pre {
+    @apply my-4;
+  }
+  .doc-prose ul {
+    @apply list-disc pl-6;
+  }
+  .doc-prose ol {
+    @apply list-decimal pl-6;
+  }
+  .doc-prose li {
+    @apply my-1;
+  }
+  .doc-prose strong {
+    @apply text-ink;
+  }
+  .doc-prose a {
+    @apply text-secondary underline underline-offset-2;
+  }
+  .doc-prose code {
+    @apply rounded bg-surface-high px-1.5 py-0.5 text-[13px] text-tertiary;
+  }
+  .doc-prose pre {
+    @apply overflow-x-auto rounded-lg bg-surface-low p-4;
+  }
+  .doc-prose pre code {
+    @apply bg-transparent p-0 text-ink;
+  }
+  .doc-prose table {
+    @apply my-4 block w-full overflow-x-auto border-collapse text-sm;
+  }
+  .doc-prose th {
+    @apply border border-line bg-surface-high px-3 py-2 text-left font-semibold text-ink;
+  }
+  .doc-prose td {
+    @apply border border-line px-3 py-2 align-top;
+  }
+  .doc-prose img {
+    @apply mx-auto my-6 h-auto max-w-full rounded-lg bg-white p-4;
+  }
+}

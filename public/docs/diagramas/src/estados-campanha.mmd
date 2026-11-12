@@ -1,0 +1,8 @@
+stateDiagram-v2
+  [*] --> recruiting : criar campanha
+  recruiting --> ongoing : mesa formada
+  ongoing --> paused : pausar
+  paused --> ongoing : retomar
+  ongoing --> finished : encerrar
+  recruiting --> finished : cancelar
+  finished --> [*]

@@ -1,144 +1,134 @@
+<div align="center">
+
+<img src="public/docs/screenshots/home.jpg" alt="RateMedia — página inicial" width="100%" />
+
 # RateMedia
 
-Aplicação web no estilo Letterboxd para rastrear, avaliar e resenhar **animes, mangás, séries e filmes**, com um diferencial: **campanhas de RPG** criadas e avaliadas pela comunidade.
+**Acompanhe, avalie e resenhe animes, mangás, séries e filmes — e descubra campanhas de RPG criadas pela comunidade.**
 
-Projeto final da disciplina de DevOps (Fatec). Sem Docker nesta fase: foco em desenvolvimento local simples e deploy direto na Vercel.
+[![CI](https://github.com/LuisGlauser/RateMedia/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/LuisGlauser/RateMedia/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/tag/LuisGlauser/RateMedia?label=vers%C3%A3o&color=7c5cd6)](CHANGELOG.md)
+![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=fff)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=fff)
+![Vercel](https://img.shields.io/badge/deploy-Vercel-000000?logo=vercel)
+![Playwright](https://img.shields.io/badge/E2E-Playwright-2EAD33?logo=playwright&logoColor=fff)
 
-## Stack
+[Sobre](#-sobre) · [Funcionalidades](#-funcionalidades) · [Arquitetura](#️-arquitetura) · [Qualidade](#-qualidade-e-cicd) · [Documentação](#-documentação) · [Wiki](https://github.com/LuisGlauser/RateMedia/wiki)
 
-- Next.js 15 (App Router, Server Actions) + React 19
-- Tailwind CSS
-- Supabase (PostgreSQL + Auth e-mail/senha + RLS)
-- APIs externas: Jikan (animes/mangás) e TMDB (filmes/séries)
-- CI: GitHub Actions · Deploy: Vercel
+</div>
 
-## Estrutura
+---
 
-```
-src/
-  app/
-    (site)/            site público (Navbar + Footer)
-      (auth)/          login, cadastro e Server Actions de autenticação
-      (app)/busca/     busca avançada: filtros, ordenação, paginação
-      (app)/listas/    perfil + minhas listas (e /listas/[id])
-      (app)/minha-biblioteca/
-      obras/[id]/      detalhe da obra: status, progresso, nota e críticas
-      campanhas/       listagem, criação e detalhe com avaliações
-    (admin)/admin/     painel admin com layout próprio (sidebar):
-                       visão geral, catálogo (CRUD), moderação, usuários
-  components/          Navbar, busca/, perfil/, admin/, home/ ...
-  lib/                 supabase/, external/, search.ts, format.ts, data.ts
-  middleware.ts        renova sessão e protege rotas privadas
-supabase/
-  schema.sql                                  tabelas, enums, triggers e RLS
-  migrations/002_telas_busca_perfil_admin.sql gêneros, status editorial, perfil, RLS admin
-tests/
-  unit/                testes unitários (regras puras: busca, formatação, constantes...)
-  integration/         Server Actions, middleware e data.ts com Supabase simulado
-  e2e/                 fluxos do usuário no navegador (Playwright)
-  performance/         teste de carga: latência, volume e erros
-  helpers/             dublê do client Supabase e utilitários
-```
+## 📌 Sobre
 
-## Rodando localmente
+O **RateMedia** reúne em um só lugar o acompanhamento de **animes, mangás, séries e filmes**, no estilo do Letterboxd. O diferencial é o módulo de **campanhas de RPG de mesa**, criadas, divulgadas e avaliadas pela própria comunidade.
 
-1. `npm install`
-2. Crie um projeto no [Supabase](https://supabase.com) e execute `supabase/schema.sql` e, em seguida, `supabase/migrations/002_telas_busca_perfil_admin.sql` no SQL Editor.
-3. `cp .env.example .env.local` e preencha as variáveis (URL e anon key do Supabase; TMDB opcional — veja `.env.example`).
-4. `npm run dev` e acesse http://localhost:3000.
+Projeto final da disciplina de **DevOps — Fatec**, construído com integração e entrega contínuas, testes automatizados em quatro níveis, contêiner Docker e segurança aplicada no banco de dados.
 
-### Tornar um usuário administrador
+## ✨ Funcionalidades
 
-Crie uma conta e, no SQL Editor:
+| | Módulo | Descrição |
+| --- | --- | --- |
+| 🔎 | **Busca avançada** | Filtros por tipo, nota e gênero, quatro ordenações e paginação |
+| 🎬 | **Página da obra** | Sinopse, metadados, média da comunidade e críticas com proteção de *spoiler* |
+| 📚 | **Biblioteca pessoal** | Status, progresso e nota de 1 a 10 para cada obra |
+| 🗂️ | **Listas e perfil** | Listas públicas ou privadas e perfil personalizável |
+| 🎲 | **Campanhas de RPG** | Publicação, avaliação e descoberta de mesas da comunidade |
+| 🛡️ | **Painel administrativo** | Métricas, curadoria do catálogo, importação do AniList, Jikan e TMDB, moderação e papéis |
+| 📖 | **Central de documentação** | Requisitos, UML, DER, Word e PDF dentro da própria aplicação, em `/docs` |
 
-```sql
-update profiles set role = 'admin' where username = 'seu_usuario';
-```
+<details>
+<summary><b>📸 Capturas de tela</b></summary>
+<br />
 
-## Scripts
-
-| Comando | Descrição |
+| Busca | Campanhas |
 | --- | --- |
-| `npm run dev` | Servidor de desenvolvimento |
-| `npm run build` | Build de produção |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript |
-| `npm test` | Todos os testes do Vitest (unitários + integração) |
-| `npm run test:unit` | Só os testes unitários |
-| `npm run test:integration` | Só os testes de integração |
-| `npm run test:watch` | Vitest em modo observação |
-| `npm run test:e2e` | Testes E2E no navegador (Playwright) |
-| `npm run test:perf` | Teste de performance (servidor precisa estar no ar) |
+| ![Busca](public/docs/screenshots/busca.jpg) | ![Campanhas](public/docs/screenshots/campanhas.jpg) |
+| **Documentação** | **Diagramas** |
+| ![Documentação](public/docs/screenshots/docs.jpg) | ![Diagramas](public/docs/screenshots/diagramas.jpg) |
 
-## Testes automatizados
+</details>
 
-| Tipo | Ferramenta | Onde | O que valida |
-| --- | --- | --- | --- |
-| Unitários | Vitest | `src/**/*.test.ts`, `tests/unit/` | Funções e regras de negócio isoladas: filtros, ordenação e paginação da busca, `timeAgo`, rótulos por tipo de mídia, média de notas, permissão de campanha, cliente HTTP das APIs externas |
-| Integração | Vitest | `tests/integration/` | Comunicação entre camadas: Server Actions ↔ Supabase (simulado) ↔ cache/redirect do Next, middleware ↔ sessão, painel admin ↔ AniList/TMDB ↔ catálogo, catálogo demo ↔ busca |
-| E2E | Playwright | `tests/e2e/` | Fluxos do usuário no navegador: home, busca pela barra do topo, filtros, ordenação, paginação, login/cadastro, campanhas, 404 |
-| Performance | Script Node (sem dependências) | `tests/performance/` | Latência (p50/p95/p99), volume (req/s) e taxa de erros sob carga, com limites que reprovam a CI |
+## 🧰 Stack
 
-```bash
-# Unitários + integração (não precisam de Supabase nem de rede)
-npm test
+| Camada | Tecnologias |
+| --- | --- |
+| Aplicação | Next.js 15 (App Router, Server Components, Server Actions), React 19, Tailwind CSS |
+| Dados e autenticação | Supabase — PostgreSQL com Row Level Security e Auth |
+| Integrações | AniList (GraphQL), Jikan (MyAnimeList) e TMDB |
+| Testes | Vitest (unitários e integração), Playwright (E2E), teste de carga em Node |
+| DevOps | GitHub Actions, Vercel, Docker e Docker Compose, Dependabot |
 
-# E2E: build em modo demonstração (sem as variáveis do Supabase) e depois os testes
-npx playwright install chromium   # só na primeira vez
-npm run build
-npm run test:e2e                  # sobe o servidor sozinho; relatório em playwright-report/
+## 🏗️ Arquitetura
 
-# Performance: com o servidor de produção rodando em outro terminal (npm run start)
-npm run test:perf                       # perfil "load": 10 conexões por 30 s
-PERF_PROFILE=smoke npm run test:perf    # 1 conexão por 10 s
-PERF_PROFILE=stress npm run test:perf   # 50 conexões por 30 s
+![Arquitetura](public/docs/diagramas/arquitetura.svg)
+
+Monólito Next.js em que as páginas consultam o banco no servidor e as alterações passam por Server Actions validadas. As regras de acesso ficam no próprio PostgreSQL (RLS), e as integrações externas têm *cache*, novas tentativas e *fallback* entre provedores.
+
+Mais detalhes em [Arquitetura](public/docs/md/05-arquitetura.md), [Modelo de dados](public/docs/md/06-modelo-de-dados.md) e [Diagramas de sequência](public/docs/md/08-diagramas-de-sequencia.md).
+
+## ✅ Qualidade e CI/CD
+
+Cada *pull request* passa pela pipeline do GitHub Actions antes de chegar à `main`:
+
+```mermaid
+flowchart LR
+  PR[Pull request] --> Q[Lint · tipos · unitários · integração · build]
+  Q --> E2E[E2E com Playwright]
+  Q --> P[Performance: smoke e carga]
+  E2E --> M[Merge na main]
+  P --> M
+  M --> V[Deploy na Vercel]
 ```
 
-Os testes de integração usam um dublê do client Supabase (`tests/helpers/supabase.ts`) que registra as consultas enviadas ao banco; só o banco e a rede são simulados, o restante do código roda de verdade.
+| Nível | Ferramenta | Cobertura |
+| --- | --- | --- |
+| Unitário | Vitest | Regras de negócio: busca, formatação, permissões, clientes das APIs |
+| Integração | Vitest | Server Actions, middleware e camada de dados com Supabase simulado |
+| Ponta a ponta | Playwright | Fluxos reais no navegador: home, busca, filtros, login, campanhas |
+| Performance | Node | Latência p95, vazão e taxa de erros com limites que reprovam a pipeline |
 
-> **Por que E2E e performance usam o modo demonstração?** Sem `NEXT_PUBLIC_SUPABASE_*` no build, o app usa o catálogo de demonstração: os dados são sempre os mesmos (testes previsíveis) e nenhum banco real é alterado. Se o seu `.env.local` tiver as chaves do Supabase, renomeie-o temporariamente antes do `npm run build` para rodar os E2E localmente. Para testar um servidor já publicado (ex.: preview da Vercel), use `E2E_BASE_URL=https://... npm run test:e2e`.
+## 📖 Documentação
 
-Limites do teste de performance (configuráveis por variável de ambiente, veja o cabeçalho de `tests/performance/load-test.mjs`):
+| Onde | Conteúdo |
+| --- | --- |
+| [**Wiki**](https://github.com/LuisGlauser/RateMedia/wiki) | Instalação, configuração, testes, deploy, guias de usuário e de administrador, FAQ |
+| [`/docs`](public/docs/md/README.md) | Visão geral, requisitos, casos de uso, histórias de usuário, arquitetura, DER, classes, sequência, integrações, DevOps e testes |
+| [Diagramas](public/docs/diagramas) | 14 diagramas (UML, DER, arquitetura, implantação) com fontes Mermaid |
+| [Word](public/docs/word/RateMedia-Documentacao.docx) · [PDF](public/docs/pdf/RateMedia-Documentacao.pdf) | Documento completo para leitura, impressão e entrega |
 
-| Perfil | Conexões | Duração | p95 máximo | Erros máximos | Vazão mínima |
-| --- | --- | --- | --- | --- | --- |
-| smoke | 1 | 10 s | 800 ms | 0% | — |
-| load | 10 | 30 s | 1500 ms | 1% | 5 req/s |
-| stress | 50 | 30 s | 4000 ms | 5% | — |
+> Para rodar o projeto na sua máquina, siga o guia de [Instalação](https://github.com/LuisGlauser/RateMedia/wiki/Instalação) na Wiki.
 
-## CI/CD
+## 🗺️ Roadmap
 
-- `.github/workflows/ci.yml`, a cada push/PR:
-  1. **build-and-test**: lint, typecheck, testes unitários, testes de integração e build.
-  2. **e2e** (depois do 1): instala o Chromium, faz o build em modo demonstração e roda o Playwright; o relatório HTML fica nos *artifacts* da execução.
-  3. **performance** (depois do 1, em paralelo com o 2): sobe o servidor de produção e roda os perfis *smoke* e *load*; o resumo aparece na aba *Summary* e o JSON nos *artifacts*.
-- Deploy: importe o repositório na Vercel e defina as variáveis de ambiente. Cada PR gera um preview; `main` publica em produção.
+- [x] Busca, biblioteca, listas e perfil
+- [x] Campanhas de RPG com avaliações
+- [x] Painel administrativo com importação de APIs externas
+- [x] Docker, CI/CD e testes em quatro níveis
+- [x] Central de documentação
+- [ ] Monitoramento e alertas em produção
+- [ ] Testes de RLS contra um Supabase local
+- [ ] Notificações e feed de atividades
 
-## Segurança
+## 🤝 Contribuindo
 
-- Credenciais apenas em variáveis de ambiente (`.env.local` fora do Git; use `.env.example` como modelo).
-- Permissões garantidas por RLS no Supabase; ações de admin revalidadas no servidor.
+Leia o [guia de contribuição](CONTRIBUTING.md) e o [código de conduta](CODE_OF_CONDUCT.md). Vulnerabilidades devem ser reportadas conforme a [política de segurança](SECURITY.md). O histórico de versões está no [CHANGELOG](CHANGELOG.md).
 
-## Próximos passos
+## 👥 Contribuidores
 
-- Itens de lista (adicionar obras às listas)
-- Monitoramento em produção (logs/erros e métricas da Vercel)
-- Testes de RLS contra um Supabase local (`supabase start`)
-- Adicionar obras às listas (botão na página da obra)
-- Trocar os ícones por SVGs exportados do Figma e usar as capas reais
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="https://github.com/LuisGlauser"><img src="https://github.com/LuisGlauser.png" width="88" alt="LuisGlauser" /><br /><b>Luís Felipe Glauser Lucas</b></a><br /><sub>Telas, Supabase e integrações com APIs</sub></td>
+    <td align="center" width="25%"><a href="https://github.com/FelipeFDSDev"><img src="https://github.com/FelipeFDSDev.png" width="88" alt="FelipeFDSDev" /><br /><b>Felipe Ferreira de Souza</b></a><br /><sub>Docker e containerização</sub></td>
+    <td align="center" width="25%"><a href="https://github.com/gabrieldasilva88188"><img src="https://github.com/gabrieldasilva88188.png" width="88" alt="gabrieldasilva88188" /><br /><b>@gabrieldasilva88188</b></a><br /><sub>Testes unitários, integração, E2E e performance</sub></td>
+    <td align="center" width="25%"><a href="https://github.com/Dracon-46"><img src="https://github.com/Dracon-46.png" width="88" alt="Dracon-46" /><br /><b>Arthur Gaspare Camzano</b></a><br /><sub>Documentação e padronização do repositório</sub></td>
+  </tr>
+</table>
 
-## Docker
+Veja todas as contribuições em [Insights → Contributors](https://github.com/LuisGlauser/RateMedia/graphs/contributors).
 
-A aplicacao usa Next.js para a interface e o servidor (App Router e Server Actions), entao roda em um unico servico/container. O Supabase continua externo. As paginas com dados de demonstracao podem ser vistas sem acesso a conta Supabase.
-
-Requisitos: Docker Desktop com Docker Compose v2.
-
-1. Copie `.env.example` para `.env.local`. Se tiver acesso ao Supabase, preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`. TMDB e opcional. Nunca coloque chaves `service_role` nesse arquivo.
-2. Com `.env.local` configurado, construa e inicie com `docker compose --env-file .env.local up --build`. Sem credenciais Supabase, execute `docker compose up --build`.
-3. Acesse http://localhost:3000. Para encerrar, use `Ctrl+C`. Para executar em segundo plano, acrescente `-d`; para parar e remover o container, use `docker compose down`.
-
-A porta padrao e `3000`; para alterar a porta no host, defina `PORT` antes de executar o Compose (por exemplo, `$env:PORT=3001; docker compose --env-file .env.local up --build` no PowerShell). O container continua ouvindo na porta `3000`.
-
-As variaveis `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` entram no bundle do navegador durante o build. Para altera-las, reconstrua a imagem. Variaveis somente de servidor, como `TMDB_API_READ_TOKEN` e `TMDB_API_KEY`, sao carregadas pelo Compose com `--env-file .env.local`; aplique alteracoes recriando o servico com `docker compose --env-file .env.local up -d`.
-
-O Dockerfile usa build multi-stage e a imagem final roda com usuario sem privilegios. `.dockerignore` exclui dependencias, artefatos e arquivos de ambiente do contexto. O Compose inclui uma verificacao HTTP de saude para facilitar a demonstracao.
+<div align="center">
+<sub>Projeto acadêmico · DevOps · Fatec</sub>
+</div>
