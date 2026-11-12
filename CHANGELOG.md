@@ -8,6 +8,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 ## [0.2.0] - 2026-11-12
 
 ### Adicionado
+- Testes de integração (Vitest), E2E (Playwright) e de performance, com jobs próprios na pipeline de CI.
 - Central de documentação em `/docs`, separada em Markdown, Diagramas, Word e PDF.
 - 11 capítulos: visão geral, requisitos, casos de uso, histórias de usuário, arquitetura, modelo de dados, classes, sequência, integrações, DevOps e testes.
 - 14 diagramas Mermaid (casos de uso, classes, DER, sequência, estados, arquitetura, implantação, navegação).

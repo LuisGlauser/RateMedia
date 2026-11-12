@@ -11,6 +11,7 @@ Bem-vindo à wiki do **RateMedia**, a plataforma para acompanhar, avaliar e rese
 | [[Banco de Dados]] | Quem vai alterar tabelas ou políticas |
 | [[Casos de Uso e Histórias]] | Quem quer entender as funcionalidades |
 | [[Diagramas]] | Visão rápida de todos os diagramas |
+| [[Testes]] | Quem vai rodar ou escrever testes |
 | [[Deploy e CI-CD]] | Quem cuida de publicação e pipeline |
 | [[Guia do Usuário]] | Quem vai usar a aplicação |
 | [[Guia do Administrador]] | Quem vai moderar e curar o catálogo |

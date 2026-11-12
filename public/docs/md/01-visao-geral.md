@@ -7,6 +7,7 @@
 | **Disciplina** | DevOps — Fatec |
 | **Tipo** | Aplicação web (SaaS social) |
 | **Repositório** | `LuisGlauser/RateMedia` |
+| **Equipe** | Luís Felipe Glauser Lucas, Felipe Ferreira de Souza, gabrieldasilva88188, Arthur Gaspare Camzano |
 | **Documentação** | Arthur Gaspare Camzano |
 
 ## 1.1 Propósito

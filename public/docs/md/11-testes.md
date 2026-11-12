@@ -2,24 +2,24 @@
 
 ## 11.1 Pirâmide
 
-| Nível | Ferramenta | Situação |
-| --- | --- | --- |
-| Unitário | Vitest | Implementado (`src/lib/**/*.test.ts`). |
-| Integração (APIs externas com `fetch` simulado) | Vitest + `vi.fn` | Implementado (`external.test.ts`). |
-| Banco/RLS | SQL no Supabase | Manual (roteiro abaixo). |
-| End-to-end | Playwright | Planejado. |
+| Nível | Ferramenta | Local | Situação |
+| --- | --- | --- | --- |
+| Unitário | Vitest (projeto `unit`) | `src/**/*.test.ts`, `tests/unit/` | Implementado |
+| Integração | Vitest (projeto `integration`) | `tests/integration/` | Implementado |
+| End-to-end | Playwright | `tests/e2e/` | Implementado |
+| Performance | Script Node | `tests/performance/load-test.mjs` | Implementado |
+| Banco/RLS | SQL no Supabase | — | Manual (roteiro abaixo) |
 
-## 11.2 Suítes existentes
+## 11.2 Suítes
 
-| Arquivo | O que verifica |
+| Suíte | O que verifica |
 | --- | --- |
-| `campaign-permissions.test.ts` | `canManageCampaign`: autor e admin podem; outros usuários e visitantes não. |
-| `constants.test.ts` | `statusLabel`: “Ler” para mangás, “Assistir” para os demais. |
-| `format.test.ts` | `timeAgo` em português. |
-| `search.test.ts` | Filtro por nota/gênero, ordenações, paginação segura, query string e janela de páginas. |
-| `external/external.test.ts` | Normalização Jikan/AniList/TMDB, tradução de gêneros, retry em 429/falha de rede, 404 → `null`, credenciais TMDB, roteamento por tipo, *fallback* AniList → Jikan, `searchAllExternal` com falhas parciais e `storageId`. |
+| Unitários | Filtros, ordenação e paginação da busca; `timeAgo`; rótulos por tipo; médias; `canManageCampaign`; cliente HTTP (timeout, retry, 429); normalização AniList/Jikan/TMDB e *fallback*; links e arquivos da documentação. |
+| Integração | Server Actions de autenticação, biblioteca, listas, campanhas e admin com um dublê do Supabase (`tests/helpers/supabase.ts`); middleware de sessão; `data.ts`; pipeline catálogo → busca. |
+| E2E | Home, busca pela barra do topo, filtros, ordenação, paginação, login/cadastro, campanhas e página 404 no navegador. |
+| Performance | Latência p50/p95/p99, vazão e taxa de erros nos perfis *smoke* (1 conexão), *load* (10) e *stress* (50), com limites que reprovam a CI. |
 
-Executar: `npm test`.
+Comandos: `npm test` (unitários + integração), `npm run test:unit`, `npm run test:integration`, `npm run test:e2e`, `npm run test:perf`.
 
 ## 11.3 Casos de teste manuais (aceitação)
 

@@ -4,7 +4,13 @@
 
 ## GitHub Actions
 
-`.github/workflows/ci.yml` roda em todo push e PR para a `main`: `npm ci` → lint → typecheck → testes → build → `npm audit`.
+`.github/workflows/ci.yml` roda em todo push e PR para a `main`, em três jobs:
+
+1. **build-and-test:** lint, typecheck, testes unitários, testes de integração, build e `npm audit`.
+2. **e2e** (depois do 1): instala o Chromium, faz o build em modo demonstração e roda o Playwright; o relatório fica nos *artifacts*.
+3. **performance** (depois do 1, em paralelo): sobe o servidor e roda os perfis *smoke* e *load*; resultados nos *artifacts*.
+
+Detalhes em [[Testes]].
 
 ## Vercel
 

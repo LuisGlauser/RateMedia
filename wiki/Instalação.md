@@ -36,6 +36,28 @@ Acesse http://localhost:3000.
 
 Crie uma conta em https://www.themoviedb.org/settings/api e preencha `TMDB_API_READ_TOKEN` (ou `TMDB_API_KEY`). AniList e Jikan não precisam de chave.
 
+## Variáveis de ambiente
+
+| Variável | Obrigatória | Descrição |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Para dados reais | URL do projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Para dados reais | Chave pública *anon* |
+| `TMDB_API_READ_TOKEN` | Não | Token de leitura do TMDB (prioritário) |
+| `TMDB_API_KEY` | Não | Chave v3 do TMDB (alternativa) |
+
+> Nunca coloque a chave `service_role` em nenhum arquivo do projeto.
+
+## Comandos
+
+| Comando | Descrição |
+| --- | --- |
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm start` | Servidor de produção |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | Checagem de tipos |
+| `npm test` | Testes unitários e de integração (veja [[Testes]]) |
+
 ## Docker
 
 ```bash

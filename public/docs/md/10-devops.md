@@ -6,18 +6,15 @@
 
 ## 10.2 Integração contínua (GitHub Actions)
 
-Arquivo: `.github/workflows/ci.yml` — executa em *push* e *pull request* para `main`.
+Arquivo: `.github/workflows/ci.yml` — executa em *push* e *pull request* para `main`, com `concurrency` que cancela execuções antigas da mesma branch.
 
-| Etapa | Comando | Objetivo |
+| Job | Depende de | Etapas |
 | --- | --- | --- |
-| Checkout | `actions/checkout@v4` | Baixar o código. |
-| Node 22 + cache npm | `actions/setup-node@v4` | Ambiente reprodutível. |
-| Dependências | `npm ci` | Instalação travada pelo `package-lock.json`. |
-| Lint | `npm run lint` | Padrões de código (ESLint). |
-| Tipos | `npm run typecheck` | `tsc --noEmit`. |
-| Testes | `npm test` | Vitest. |
-| Build | `npm run build` | Build de produção com variáveis *placeholder*. |
-| Auditoria | `npm audit --audit-level=high` | Vulnerabilidades (não bloqueante). |
+| **build-and-test** | — | `npm ci` → lint → typecheck → testes unitários → testes de integração → build → `npm audit` (não bloqueante) |
+| **e2e** | build-and-test | Instala o Chromium → build em modo demonstração → Playwright → publica `playwright-report` |
+| **performance** | build-and-test | Build → sobe o servidor → perfis *smoke* e *load* → publica resultados |
+
+Os jobs **e2e** e **performance** rodam em paralelo. Sem as variáveis do Supabase, o build usa o catálogo de demonstração, garantindo dados previsíveis e nenhum acesso ao banco real.
 
 ## 10.3 Entrega contínua (Vercel)
 

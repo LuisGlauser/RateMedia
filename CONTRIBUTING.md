@@ -6,7 +6,7 @@ Obrigado por contribuir com o **RateMedia**! Este guia explica como preparar o a
 
 1. Faça um fork (ou crie uma branch, se tiver acesso) e clone o repositório.
 2. `npm install`
-3. `cp .env.example .env.local` e preencha as variáveis (veja o [README](README.md#variáveis-de-ambiente)).
+3. `cp .env.example .env.local` e preencha as variáveis (veja [Instalação](https://github.com/LuisGlauser/RateMedia/wiki/Instalação) na Wiki).
 4. `npm run dev`
 
 ## Fluxo de trabalho
@@ -17,7 +17,7 @@ Obrigado por contribuir com o **RateMedia**! Este guia explica como preparar o a
 | Commits | [Conventional Commits](https://www.conventionalcommits.org/pt-br/) em português: `feat: adiciona filtro por ano` |
 | Pull request | Preencha o template, vincule a issue (`Closes #12`) e aguarde o CI verde |
 | Revisão | Pelo menos uma aprovação antes do merge |
-| Merge | *Squash and merge*, mantendo o título no padrão de commit |
+| Merge | *Squash and merge* para PRs pequenos; *Create a merge commit* quando os commits precisam ser preservados (ex.: versões com tag) |
 
 ### Tipos de commit
 
@@ -39,9 +39,10 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run test:e2e
 ```
 
-- Regras de negócio novas em `src/lib` precisam de teste unitário.
+- Regras de negócio novas precisam de teste unitário; Server Actions novas, de teste de integração em `tests/integration`; fluxos novos de tela, de teste E2E em `tests/e2e`. Veja a página [Testes](https://github.com/LuisGlauser/RateMedia/wiki/Testes) da Wiki.
 - Mudanças no banco entram como nova migração em `supabase/migrations/NNN_descricao.sql` (idempotente) e atualizam o [modelo de dados](public/docs/md/06-modelo-de-dados.md).
 - Mudanças de comportamento atualizam a documentação em `public/docs/md` e, se preciso, os diagramas em `public/docs/diagramas/src`.
 
