@@ -15,6 +15,9 @@ type ReviewRow = LibraryEntry & { profiles: { username: string } | null };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// Banco guarda 0–5; o formulário usa a escala 1–10.
+const toTen = (v: number | null | undefined) => (v == null ? null : Math.round(Number(v) * 2));
+
 export default async function MediaDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!UUID.test(id)) notFound();
@@ -169,6 +172,11 @@ export default async function MediaDetail({ params }: { params: Promise<{ id: st
                 rating={mine?.rating != null ? Math.round(Number(mine.rating) * 2) : null}
                 review={mine?.review ?? null}
                 spoilers={mine?.has_spoilers ?? false}
+                aspects={{
+                  art: toTen(mine?.rating_art),
+                  sound: toTen(mine?.rating_sound),
+                  story: toTen(mine?.rating_story),
+                }}
               />
             )}
 

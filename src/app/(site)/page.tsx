@@ -10,6 +10,20 @@ import {
   type PosterCategory,
   type PosterItem,
 } from "@/lib/demo-data";
+import {
+  EMPTY_VIEWER,
+  getFeaturedLists,
+  getHomeViewer,
+  getLatestReviews,
+  getTopCurators,
+  getTrending,
+  type CuratorRow,
+  type FeaturedListRow,
+  type FeedRow,
+  type HomeViewer,
+  type TrendingRow,
+} from "@/lib/home-data";
+import { MEDIA_TYPES } from "@/lib/constants";
 import type { Campaign, Media } from "@/types";
 import Hero, { DEMO_SPOTLIGHT, type SpotlightData } from "@/components/home/Hero";
 import StatsStrip, { type Stats } from "@/components/home/StatsStrip";
@@ -17,7 +31,7 @@ import Poster from "@/components/home/Poster";
 import SectionHeading from "@/components/home/SectionHeading";
 import RpgFeatured from "@/components/home/RpgFeatured";
 import CommunityFeed from "@/components/home/CommunityFeed";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import TrendingCarousel from "@/components/home/TrendingCarousel";
 
 export const dynamic = "force-dynamic";
 
@@ -39,8 +53,33 @@ function toPoster(m: Media, rating: number | null): PosterItem {
     category: m.type as PosterCategory,
     rating,
     year: m.release_year,
-    subtitle: m.total_units ? `${m.total_units} un.` : undefined,
+    subtitle: unitsLabel(m),
     cover: m.cover_url,
+  };
+}
+
+const unitsLabel = (m: { total_units: number | null }) =>
+  m.total_units ? `${m.total_units} un.` : undefined;
+
+function metaOf(type: Media["type"], units: number | null): string {
+  return `${MEDIA_TYPES[type].toUpperCase()}${units ? ` • ${units} un.` : ""}`;
+}
+
+// Spotlight = obra #1 do ranking semanal (get_trending_media).
+function toSpotlight(t: TrendingRow): SpotlightData {
+  return {
+    id: t.id,
+    type: t.type,
+    title: t.title,
+    year: t.release_year,
+    meta: metaOf(t.type, t.total_units),
+    tags: [],
+    synopsis: t.synopsis ?? "Sem sinopse cadastrada.",
+    cover: t.cover_url,
+    score: t.avg_rating,
+    ratingsCount: t.ratings_count,
+    aspects: { art: t.art_pct, sound: t.sound_pct, story: t.story_pct },
+    delta: t.engagement_delta_pct,
   };
 }
 
@@ -61,6 +100,11 @@ export default async function HomePage({
   let popular: PosterItem[] = DEMO_POPULAR;
   let rpg: DemoRpg[] = DEMO_RPG;
   let spotlight: SpotlightData = DEMO_SPOTLIGHT;
+  let spotlightId: string | null = null;
+  let reviews: FeedRow[] = [];
+  let curators: CuratorRow[] = [];
+  let featuredLists: FeaturedListRow[] = [];
+  let viewer: HomeViewer = EMPTY_VIEWER;
   let rpgTotal = "1.420";
   let stats: Stats = {
     works: "24.500+",
@@ -71,8 +115,18 @@ export default async function HomePage({
 
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
-    const [{ data: mediaRows }, { data: campRows }, works, reviews, camps, users] =
-      await Promise.all([
+    const [
+      { data: mediaRows },
+      { data: campRows },
+      works,
+      reviewsCount,
+      camps,
+      users,
+      trendingRows,
+      reviewRows,
+      curatorRows,
+      listRows,
+    ] = await Promise.all([
         supabase.from("media").select("*").order("created_at", { ascending: false }).limit(24),
         supabase
           .from("campaigns")
@@ -83,28 +137,65 @@ export default async function HomePage({
         supabase.from("library_entries").select("id", { count: "exact", head: true }).not("review", "is", null),
         supabase.from("campaigns").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
+        // Dados reais da Home (cache de 15 min; ver src/lib/home-data.ts)
+        getTrending(),
+        getLatestReviews(),
+        getTopCurators(),
+        getFeaturedLists(),
       ]);
+
+    reviews = reviewRows;
+    curators = curatorRows;
+    featuredLists = listRows;
 
     const media = (mediaRows ?? []) as Media[];
     if (media.length > 0) {
       const ratings = await mediaRatings(media.map((m) => m.id));
       const posters = media.map((m) => toPoster(m, ratings.get(m.id) ?? null));
-      trending = posters.slice(0, 6);
       popular = posters;
 
-      const top = media[0];
-      spotlight = {
-        id: top.id,
-        title: top.title,
-        year: top.release_year,
-        meta: `${top.type.toUpperCase()}${top.total_units ? ` • ${top.total_units} un.` : ""}`,
-        tags: [],
-        synopsis: top.synopsis ?? "Sem sinopse cadastrada.",
-        cover: top.cover_url,
-        score: ratings.get(top.id) ?? 0,
-        votes: "avaliações da comunidade",
-      };
+      if (trendingRows.length > 0) {
+        // Ranking semanal por engajamento: alimenta o carrossel e o Spotlight (#1).
+        trending = trendingRows.map((t, i) => ({
+          id: t.id,
+          title: t.title,
+          category: t.type,
+          rating: t.avg_rating,
+          year: t.release_year,
+          subtitle: unitsLabel(t),
+          rank: `#${i + 1}`,
+          cover: t.cover_url,
+        }));
+        spotlight = toSpotlight(trendingRows[0]);
+      } else {
+        // Fallback (ex.: migration 002 ainda não aplicada): obras mais recentes.
+        trending = posters.slice(0, 12);
+        const top = media[0];
+        spotlight = toSpotlight({
+          id: top.id,
+          type: top.type,
+          title: top.title,
+          synopsis: top.synopsis,
+          cover_url: top.cover_url,
+          release_year: top.release_year,
+          total_units: top.total_units,
+          avg_rating: ratings.get(top.id) ?? null,
+          ratings_count: 0,
+          art_pct: null,
+          sound_pct: null,
+          story_pct: null,
+          engagement: 0,
+          engagement_delta_pct: null,
+        });
+      }
+      spotlightId = spotlight.id;
     }
+
+    viewer = await getHomeViewer({
+      spotlightId,
+      reviews,
+      curatorIds: curators.map((c) => c.id),
+    });
 
     const campaigns = (campRows ?? []) as (Campaign & { profiles: { username: string } | null })[];
     if (campaigns.length > 0) {
@@ -129,7 +220,7 @@ export default async function HomePage({
 
     stats = {
       works: fmt(works.count ?? 0),
-      reviews: fmt(reviews.count ?? 0),
+      reviews: fmt(reviewsCount.count ?? 0),
       campaigns: fmt(camps.count ?? 0),
       curators: fmt(users.count ?? 0),
     };
@@ -140,26 +231,11 @@ export default async function HomePage({
 
   return (
     <>
-      <Hero data={spotlight} />
+      <Hero data={spotlight} viewer={viewer.spotlight} loggedIn={viewer.userId !== null} />
       <StatsStrip stats={stats} />
 
       <div className="mx-auto max-w-[1280px] space-y-10 px-6 py-10 xl:px-12">
-        <section className="space-y-4">
-          <SectionHeading eyebrow="Tendências de audiência" title="Em Alta Esta Semana">
-            <div className="flex items-center gap-2 text-xs text-ink-dim">
-              Atualizado a cada 15 min
-              <span className="flex gap-1">
-                <span className="rounded bg-surface p-1.5"><ChevronLeft aria-hidden className="size-3" /></span>
-                <span className="rounded bg-surface p-1.5"><ChevronRight aria-hidden className="size-3" /></span>
-              </span>
-            </div>
-          </SectionHeading>
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
-            {trending.map((p) => (
-              <Poster key={p.title} item={p} />
-            ))}
-          </div>
-        </section>
+        <TrendingCarousel items={trending} />
 
         <RpgFeatured items={rpg} total={rpgTotal} />
 
@@ -191,7 +267,7 @@ export default async function HomePage({
           )}
         </section>
 
-        <CommunityFeed />
+        <CommunityFeed reviews={reviews} curators={curators} lists={featuredLists} viewer={viewer} />
       </div>
     </>
   );

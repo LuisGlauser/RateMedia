@@ -2,6 +2,8 @@ export type MediaType = "anime" | "manga" | "series" | "movie";
 export type UserStatus = "planned" | "in_progress" | "completed" | "dropped";
 export type PublishStatus = "published" | "draft" | "review";
 export type CampaignStatus = "recruiting" | "ongoing" | "finished" | "paused";
+/** Uma avaliação pertence a uma obra (library_entries) ou a uma campanha (campaign_reviews). */
+export type ReviewKind = "media" | "campaign";
 
 export interface Media {
   id: string;
@@ -37,6 +39,11 @@ export interface LibraryEntry {
   progress: number;
   review: string | null;
   has_spoilers: boolean;
+  is_favorite: boolean;
+  rating_art: number | null;
+  rating_sound: number | null;
+  rating_story: number | null;
+  created_at: string;
   updated_at: string;
 }
 

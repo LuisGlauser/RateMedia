@@ -7,14 +7,19 @@ import type { Media } from "@/types";
 
 export const dynamic = "force-dynamic";
 
+/** Mede a latência de uma chamada fora do corpo do componente (performance.now() é impuro). */
+async function timed<T>(fn: () => PromiseLike<T>) {
+  const t0 = performance.now();
+  const result = await fn();
+  return { result, latency: Math.round(performance.now() - t0) };
+}
+
 export default async function AdminOverview() {
   const supabase = await createClient();
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
   const head = { count: "exact" as const, head: true };
 
-  const t0 = performance.now();
-  const totalRes = await supabase.from("media").select("id", head);
-  const latency = Math.round(performance.now() - t0);
+  const { result: totalRes, latency } = await timed(() => supabase.from("media").select("id", head));
 
   const [monthRes, pendingRes, libReviews, campReviews, usersRes, adminsRes, recent] = await Promise.all([
     supabase.from("media").select("id", head).gte("created_at", monthStart),

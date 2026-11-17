@@ -8,11 +8,11 @@ export interface Slice {
 /** Rosca em conic-gradient (sem dependências de gráfico). */
 export default function Donut({ slices, centerLabel }: { slices: Slice[]; centerLabel: string }) {
   const total = slices.reduce((a, s) => a + s.value, 0);
-  let acc = 0;
   const stops = slices.map((s, i) => {
-    const start = (acc / total) * 100;
-    acc += s.value;
-    return `${COLORS[i % COLORS.length]} ${start}% ${(acc / total) * 100}%`;
+    const before = slices.slice(0, i).reduce((sum, x) => sum + x.value, 0);
+    const start = (before / total) * 100;
+    const end = ((before + s.value) / total) * 100;
+    return `${COLORS[i % COLORS.length]} ${start}% ${end}%`;
   });
 
   return (
