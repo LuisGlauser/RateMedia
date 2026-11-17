@@ -3,16 +3,30 @@
 import { useState } from "react";
 import { PenLine, Send, Star } from "lucide-react";
 
+export interface AspectScores {
+  art: number | null; // escala 1–10
+  sound: number | null;
+  story: number | null;
+}
+
+const ASPECT_FIELDS: { name: string; key: keyof AspectScores; label: string }[] = [
+  { name: "aspect_art", key: "art", label: "Arte & Animação" },
+  { name: "aspect_sound", key: "sound", label: "Trilha Sonora" },
+  { name: "aspect_story", key: "story", label: "Roteiro & Emoção" },
+];
+
 export default function ReviewForm({
   action,
   rating,
   review,
   spoilers,
+  aspects,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   rating: number | null; // escala 1–10
   review: string | null;
   spoilers: boolean;
+  aspects: AspectScores;
 }) {
   const [score, setScore] = useState(rating ?? 0);
 
@@ -58,6 +72,31 @@ export default function ReviewForm({
           </span>
         </div>
       </div>
+
+      <fieldset className="rounded-lg bg-surface-low p-4">
+        <legend className="px-1 text-xs font-medium">
+          Notas por aspecto <span className="text-ink-dim">(opcional, alimenta as barras do Spotlight)</span>
+        </legend>
+        <div className="mt-2 grid gap-3 sm:grid-cols-3">
+          {ASPECT_FIELDS.map((f) => (
+            <label key={f.name} className="space-y-1 text-[11px] font-bold uppercase tracking-label text-ink-dim">
+              {f.label}
+              <select
+                name={f.name}
+                defaultValue={aspects[f.key] ?? ""}
+                className="mt-1 w-full rounded bg-surface-high px-2 py-1 text-xs font-semibold normal-case tracking-normal text-ink focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value="">Não avaliar</option>
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1} / 10
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <div className="space-y-1">
         <label htmlFor="review" className="text-xs font-medium">

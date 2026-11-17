@@ -7,10 +7,11 @@ const mocks = vi.hoisted(() => ({
     throw new Error(`NEXT_REDIRECT:${url}`);
   }),
   revalidatePath: vi.fn(),
+  updateTag: vi.fn(),
   createClient: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, updateTag: mocks.updateTag }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
 
 import {
@@ -65,6 +66,7 @@ describe("createCampaign", () => {
 
     expect(inserted()).toMatchObject({ author_id: AUTHOR, ...valid, status: "ongoing", rules: null, cover_url: null });
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/campanhas");
+    expect(mocks.updateTag).toHaveBeenCalledWith("home");
   });
 
   it("não grava nada quando faltam campos obrigatórios", async () => {
@@ -101,6 +103,8 @@ describe("submitCampaignReview", () => {
     expect(row).toEqual({ campaign_id: "camp-1", user_id: AUTHOR, rating: 5, comment: "Mestre excelente" });
     expect(options).toEqual({ onConflict: "campaign_id,user_id" });
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/campanhas/camp-1");
+    // a crítica aparece no feed "Últimas Avaliações" da Home
+    expect(mocks.updateTag).toHaveBeenCalledWith("home");
   });
 
   it("nota negativa vira 0 e comentário vazio vira null", async () => {

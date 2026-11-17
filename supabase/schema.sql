@@ -148,3 +148,4 @@ create policy "creviews_own_write" on campaign_reviews for all
 -- update profiles set role = 'admin' where username = 'seu_usuario';
 
 -- Telas Busca/Perfil/Admin: aplique também supabase/migrations/002_telas_busca_perfil_admin.sql
+-- Home com dados reais (curtidas, comentários, seguidores, ranking): aplique também supabase/migrations/004_home_dados_reais.sql
