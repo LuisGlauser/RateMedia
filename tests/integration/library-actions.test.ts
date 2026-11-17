@@ -7,10 +7,11 @@ const mocks = vi.hoisted(() => ({
     throw new Error(`NEXT_REDIRECT:${url}`);
   }),
   revalidatePath: vi.fn(),
+  updateTag: vi.fn(),
   createClient: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, updateTag: mocks.updateTag }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
 
 import { saveEntry } from "@/app/(site)/obras/actions";
@@ -86,10 +87,43 @@ describe("saveEntry", () => {
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/minha-biblioteca");
   });
 
+  it("invalida o cache de 15 min da Home (nota, ranking e feed mudam)", async () => {
+    await saveEntry(MEDIA_ID, form({ rating: "8" }));
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
+    expect(mocks.updateTag).toHaveBeenCalledWith("home");
+  });
+
+  it("converte as notas por aspecto (1–10) para 0–5 e anula valores fora da faixa", async () => {
+    await saveEntry(MEDIA_ID, form({ aspect_art: "9", aspect_sound: "10", aspect_story: "0" }));
+    expect(upserted()).toMatchObject({ rating_art: 4.5, rating_sound: 5, rating_story: null });
+
+    await saveEntry(MEDIA_ID, form({ aspect_art: "11", aspect_sound: "abc" }));
+    const second = argsOf(db.queries("library_entries", "upsert")[1], "upsert")?.[0] as Record<string, unknown>;
+    expect(second).toMatchObject({ rating_art: null, rating_sound: null });
+    expect(second).not.toHaveProperty("rating_story");
+  });
+
+  it("salva só os aspectos enviados (avaliar a nota geral não apaga os aspectos)", async () => {
+    await saveEntry(MEDIA_ID, form({ rating: "8" }));
+    expect(upserted()).not.toHaveProperty("rating_art");
+    expect(upserted()).not.toHaveProperty("rating_sound");
+    expect(upserted()).not.toHaveProperty("rating_story");
+    expect(upserted()).not.toHaveProperty("is_favorite");
+  });
+
+  it("favoritar grava is_favorite; qualquer valor diferente de 1 desfavorita", async () => {
+    await saveEntry(MEDIA_ID, form({ favorite: "1" }));
+    expect(upserted()).toMatchObject({ is_favorite: true });
+
+    await saveEntry(MEDIA_ID, form({ favorite: "0" }));
+    expect((argsOf(db.queries("library_entries", "upsert")[1], "upsert")?.[0] as Record<string, unknown>).is_favorite).toBe(false);
+  });
+
   it("propaga erro do banco e não revalida o cache", async () => {
     db.setResponder((q) => (q.table === "library_entries" ? { error: { message: "violates row-level security policy" } } : undefined));
 
     await expect(saveEntry(MEDIA_ID, form({ status: "completed" }))).rejects.toThrow("row-level security");
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
+    expect(mocks.updateTag).not.toHaveBeenCalled();
   });
 });

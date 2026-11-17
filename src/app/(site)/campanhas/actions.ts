@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { CAMPAIGN_STATUSES } from "@/lib/constants";
 import { canManageCampaign, getViewer } from "@/lib/data";
@@ -39,6 +39,7 @@ export async function createCampaign(formData: FormData) {
 
   if (error) throw new Error(error.message);
   revalidatePath("/campanhas");
+  updateTag("home");
   redirect(`/campanhas/${data.id}`);
 }
 
@@ -61,6 +62,8 @@ export async function submitCampaignReview(campaignId: string, formData: FormDat
   );
   if (error) throw new Error(error.message);
   revalidatePath(`/campanhas/${campaignId}`);
+  revalidatePath("/");
+  updateTag("home");
 }
 
 /** Autor ou admin. Retorna o client Supabase se autorizado, senão null. */
@@ -84,6 +87,7 @@ export async function updateCampaign(formData: FormData) {
   revalidatePath("/campanhas");
   revalidatePath(`/campanhas/${id}`);
   revalidatePath("/admin/campanhas");
+  updateTag("home"); // título/sistema aparecem no feed da Home
   redirect(`/campanhas/${id}`);
 }
 
@@ -95,6 +99,7 @@ export async function deleteCampaign(formData: FormData) {
   if (error) throw new Error(error.message);
   revalidatePath("/campanhas");
   revalidatePath("/admin/campanhas");
+  updateTag("home"); // as críticas da campanha saem do feed
   // Só destinos conhecidos (evita redirecionamento aberto).
   redirect(formData.get("redirect_to") === "/admin/campanhas" ? "/admin/campanhas" : "/campanhas");
 }

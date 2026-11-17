@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { USER_STATUSES } from "@/lib/constants";
 import type { UserStatus } from "@/types";
@@ -37,6 +37,21 @@ export async function saveEntry(mediaId: string, formData: FormData) {
     patch.review = String(formData.get("review") ?? "").trim() || null;
     patch.has_spoilers = formData.get("spoilers") === "on";
   }
+  // Notas por aspecto (mesma escala 1–10 da nota geral) que alimentam as barras do Spotlight.
+  const aspects = [
+    ["aspect_art", "rating_art"],
+    ["aspect_sound", "rating_sound"],
+    ["aspect_story", "rating_story"],
+  ] as const;
+  for (const [field, column] of aspects) {
+    if (formData.has(field)) {
+      const r = Number(formData.get(field));
+      patch[column] = r >= 1 && r <= 10 ? r / 2 : null;
+    }
+  }
+  if (formData.has("favorite")) {
+    patch.is_favorite = formData.get("favorite") === "1";
+  }
 
   const { error } = await supabase
     .from("library_entries")
@@ -45,4 +60,6 @@ export async function saveEntry(mediaId: string, formData: FormData) {
 
   revalidatePath(`/obras/${mediaId}`);
   revalidatePath("/minha-biblioteca");
+  revalidatePath("/");
+  updateTag("home");
 }

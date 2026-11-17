@@ -6,6 +6,35 @@ export const dynamic = "force-dynamic";
 
 type Row = { id: string; text: string; rating: number | null; who: string; where: string; at: string };
 
+function Block({ title, rows, action, label }: { title: string; rows: Row[]; action: (f: FormData) => Promise<void>; label: string }) {
+  return (
+    <section className="overflow-hidden rounded-3xl border border-line bg-surface">
+      <h2 className="p-6 text-2xl font-bold">{title} <span className="text-base font-normal text-ink-dim">({rows.length})</span></h2>
+      {rows.length === 0 ? (
+        <p className="px-6 pb-6 text-sm text-ink-muted">Nada para moderar.</p>
+      ) : (
+        <ul className="divide-y divide-surface-high">
+          {rows.map((r) => (
+            <li key={r.id} className="flex flex-wrap items-start justify-between gap-4 px-6 py-4">
+              <div className="min-w-0 flex-1 space-y-1">
+                <p className="text-xs text-ink-dim">
+                  <strong className="text-ink">@{r.who}</strong> em <strong className="text-ink">{r.where}</strong> · {timeAgo(r.at)}
+                  {r.rating !== null && <> · ★ {r.rating.toFixed(1)}</>}
+                </p>
+                <p className="text-sm text-ink-muted">“{r.text}”</p>
+              </div>
+              <form action={action}>
+                <input type="hidden" name="id" value={r.id} />
+                <button className="btn bg-danger-container/40 text-danger hover:bg-danger-container/70">{label}</button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 export default async function ModerationPage() {
   const supabase = await createClient();
   const [{ data: lib }, { data: camp }] = await Promise.all([
@@ -34,33 +63,6 @@ export default async function ModerationPage() {
     who: one(r.profiles as { username: string } | { username: string }[] | null)?.username ?? "—",
     where: one(r.campaigns as { title: string } | { title: string }[] | null)?.title ?? "—",
   }));
-
-  const Block = ({ title, rows, action, label }: { title: string; rows: Row[]; action: (f: FormData) => Promise<void>; label: string }) => (
-    <section className="overflow-hidden rounded-3xl border border-line bg-surface">
-      <h2 className="p-6 text-2xl font-bold">{title} <span className="text-base font-normal text-ink-dim">({rows.length})</span></h2>
-      {rows.length === 0 ? (
-        <p className="px-6 pb-6 text-sm text-ink-muted">Nada para moderar.</p>
-      ) : (
-        <ul className="divide-y divide-surface-high">
-          {rows.map((r) => (
-            <li key={r.id} className="flex flex-wrap items-start justify-between gap-4 px-6 py-4">
-              <div className="min-w-0 flex-1 space-y-1">
-                <p className="text-xs text-ink-dim">
-                  <strong className="text-ink">@{r.who}</strong> em <strong className="text-ink">{r.where}</strong> · {timeAgo(r.at)}
-                  {r.rating !== null && <> · ★ {r.rating.toFixed(1)}</>}
-                </p>
-                <p className="text-sm text-ink-muted">“{r.text}”</p>
-              </div>
-              <form action={action}>
-                <input type="hidden" name="id" value={r.id} />
-                <button className="btn bg-danger-container/40 text-danger hover:bg-danger-container/70">{label}</button>
-              </form>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
 
   return (
     <>

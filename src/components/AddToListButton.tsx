@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,8 @@ import {
   setMediaInList,
   type ListOption,
 } from "@/lib/actions/lists";
+
+const subscribeNoop = () => () => {};
 
 interface Props {
   /** Id da obra no banco. Sem id (catálogo de demonstração) o botão só leva à busca. */
@@ -62,7 +64,8 @@ function Modal({
   onClose: () => void;
 }) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  // true só no cliente (false durante SSR/hidratação), sem setState em effect.
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const [lists, setLists] = useState<ListOption[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -77,19 +80,25 @@ function Modal({
     router.push(`/login?next=${encodeURIComponent(next)}`);
   }, [router]);
 
-  const load = useCallback(async () => {
-    setError(null);
-    const res = await getMyListsForMedia(mediaId);
-    if (res.status === "login") return goLogin();
-    if (res.status === "error") return setError(res.message);
-    setLists(res.lists);
-    if (res.lists.length === 0) setCreating(true);
-  }, [mediaId, goLogin]);
+  const applyResult = useCallback(
+    (res: Awaited<ReturnType<typeof getMyListsForMedia>>) => {
+      setError(null);
+      if (res.status === "login") return goLogin();
+      if (res.status === "error") return setError(res.message);
+      setLists(res.lists);
+      if (res.lists.length === 0) setCreating(true);
+    },
+    [goLogin],
+  );
+
+  const load = useCallback(
+    async () => applyResult(await getMyListsForMedia(mediaId)),
+    [mediaId, applyResult],
+  );
 
   useEffect(() => {
-    setMounted(true);
-    void load();
-  }, [load]);
+    void getMyListsForMedia(mediaId).then(applyResult);
+  }, [mediaId, applyResult]);
 
   // Esc fecha, foco entra no diálogo e a rolagem da página fica travada.
   useEffect(() => {
