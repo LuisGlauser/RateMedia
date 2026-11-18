@@ -6,15 +6,30 @@
 
 ## 10.2 Integração contínua (GitHub Actions)
 
-Arquivo: `.github/workflows/ci.yml` — executa em *push* e *pull request* para `main`, com `concurrency` que cancela execuções antigas da mesma branch.
+Arquivo: `.github/workflows/ci.yml` — executa em *push* e *pull request* para `main` e `develop` (e manualmente). Os jobs compartilham a action local `.github/actions/setup` (Node 22 + `npm ci` com cache).
 
-| Job | Depende de | Etapas |
+| Job | Depende de | O que faz |
 | --- | --- | --- |
-| **build-and-test** | — | `npm ci` → lint → typecheck → testes unitários → testes de integração → build → `npm audit` (não bloqueante) |
-| **e2e** | build-and-test | Instala o Chromium → build em modo demonstração → Playwright → publica `playwright-report` |
-| **performance** | build-and-test | Build → sobe o servidor → perfis *smoke* e *load* → publica resultados |
+| **Lint** | — | ESLint |
+| **Checagem de tipos** | — | `tsc --noEmit` |
+| **Testes unitários** | — | `npm run test:unit` |
+| **Testes de integração** | — | `npm run test:integration` |
+| **Build** (matriz) | — | Build em modo demonstração e com variáveis do Supabase, com cache do Next.js |
+| **Testes E2E** | lint, tipos, unitários, integração | Build demo → Playwright (Chromium em cache) → publica `playwright-report` |
+| **Testes de performance** | lint, tipos, unitários, integração | Sobe o servidor → perfis *smoke* e *load* → publica resultados |
+| **Imagem Docker** | — | `docker build` + sobe o contêiner e verifica se responde |
+| **Varredura de segredos** | — | gitleaks em todo o histórico |
+| **Auditoria de dependências** | — | `npm audit` das dependências de produção, com resumo no job (bloqueante se `AUDIT_BLOCKING=true`) |
+| **CI OK** | todos | Falha se qualquer job falhar ou for cancelado; é o check obrigatório da `main` |
 
-Os jobs **e2e** e **performance** rodam em paralelo. Sem as variáveis do Supabase, o build usa o catálogo de demonstração, garantindo dados previsíveis e nenhum acesso ao banco real.
+Outros workflows:
+
+| Arquivo | Gatilho | O que faz |
+| --- | --- | --- |
+| `codeql.yml` | push e PR | Análise estática de segurança com CodeQL |
+| `deploy.yml` (Pós-deploy) | `deployment_status` ou manual | Smoke test das rotas `/`, `/busca`, `/login` e `/docs` no site publicado |
+
+Sem as variáveis do Supabase, o build usa o catálogo de demonstração, garantindo dados previsíveis e nenhum acesso ao banco real.
 
 ## 10.3 Entrega contínua (Vercel)
 
