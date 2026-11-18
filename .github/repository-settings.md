@@ -5,7 +5,7 @@ Itens que só podem ser ajustados por quem administra o repositório no GitHub.
 ## About (engrenagem ao lado de "About")
 
 - **Description:** Plataforma para acompanhar, avaliar e resenhar animes, mangás, séries e filmes, com campanhas de RPG da comunidade. Next.js + Supabase.
-- **Website:** URL de produção da Vercel
+- **Website:** https://ratemedia.vercel.app
 - **Topics:** `nextjs` `react` `typescript` `tailwindcss` `supabase` `postgresql` `vercel` `docker` `github-actions` `devops` `anime` `manga` `movies` `tv-series` `rpg` `letterboxd` `fatec` `server-actions`
 - Marcar: **Releases**, **Deployments**; desmarcar **Packages** se não usar.
 

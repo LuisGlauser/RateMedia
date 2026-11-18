@@ -1,5 +1,8 @@
 version: 2
 updates:
+  # Dependências npm: só minor e patch entram automaticamente.
+  # Versões major (Next 16, ESLint 10, Tailwind 4, Vitest 5...) quebram a
+  # configuração atual e são migradas manualmente, em PR próprio.
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -9,11 +12,17 @@ updates:
     commit-message:
       prefix: build
     labels: ["dependencies"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       next-react:
         patterns: ["next", "react", "react-dom", "eslint-config-next", "@types/react*"]
       supabase:
         patterns: ["@supabase/*"]
+      dev-tools:
+        dependency-type: development
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -21,6 +30,11 @@ updates:
     commit-message:
       prefix: ci
     labels: ["ci"]
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Imagem base do Docker: fica na linha LTS do Node (22), sem saltos de major.
   - package-ecosystem: docker
     directory: /
     schedule:
@@ -28,3 +42,6 @@ updates:
     commit-message:
       prefix: build
     labels: ["dependencies"]
+    ignore:
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]

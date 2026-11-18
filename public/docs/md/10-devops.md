@@ -18,6 +18,8 @@ Os jobs **e2e** e **performance** rodam em paralelo. Sem as variáveis do Supaba
 
 ## 10.3 Entrega contínua (Vercel)
 
+**Produção:** https://ratemedia.vercel.app
+
 - O repositório é importado na Vercel (framework **Next.js**, comando `npm run build`).
 - Cada *pull request* gera um **deploy de preview** com URL própria.
 - O *merge* na `main` publica em **produção**.
