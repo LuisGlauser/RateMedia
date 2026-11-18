@@ -4,13 +4,20 @@
 
 ## GitHub Actions
 
-`.github/workflows/ci.yml` roda em todo push e PR para a `main`, em três jobs:
+`.github/workflows/ci.yml` roda em todo push e PR para `main` e `develop`. Os jobs rodam em paralelo:
 
-1. **build-and-test:** lint, typecheck, testes unitários, testes de integração, build e `npm audit`.
-2. **e2e** (depois do 1): instala o Chromium, faz o build em modo demonstração e roda o Playwright; o relatório fica nos *artifacts*.
-3. **performance** (depois do 1, em paralelo): sobe o servidor e roda os perfis *smoke* e *load*; resultados nos *artifacts*.
+| Job | O que faz |
+| --- | --- |
+| Lint e checagem de tipos | ESLint e `tsc --noEmit` |
+| Testes unitários e de integração | Vitest, cada projeto no seu job |
+| Build | Matriz: modo demonstração e com variáveis do Supabase |
+| E2E | Playwright, depois das verificações rápidas |
+| Performance | Perfis *smoke* e *load*, depois das verificações rápidas |
+| Docker | Build da imagem e smoke test do contêiner |
+| Segurança | gitleaks (segredos) e `npm audit` |
+| **CI OK** | Consolida todos os jobs; é o check obrigatório da `main` |
 
-Detalhes em [[Testes]].
+Além disso, `codeql.yml` faz análise estática de segurança e `deploy.yml` testa as rotas principais do site depois de cada deploy. Detalhes dos testes em [[Testes]].
 
 ## Vercel
 

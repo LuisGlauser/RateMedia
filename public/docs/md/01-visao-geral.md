@@ -7,7 +7,7 @@
 | **Disciplina** | DevOps — Fatec |
 | **Tipo** | Aplicação web (SaaS social) |
 | **Repositório** | `LuisGlauser/RateMedia` |
-| **Equipe** | Luís Felipe Glauser Lucas, Felipe Ferreira de Souza, gabrieldasilva88188, Arthur Gaspare Camzano |
+| **Equipe** | Luís Felipe Glauser Lucas, Felipe Ferreira de Souza, Gabriel da Silva, Giovanni Camargo Maruccio, Arthur Gaspare Camzano |
 | **Documentação** | Arthur Gaspare Camzano |
 
 ## 1.1 Propósito
@@ -46,7 +46,7 @@ Fãs de cultura pop usam várias plataformas diferentes (MyAnimeList para animes
 
 | Camada | Tecnologia |
 | --- | --- |
-| Front-end | React 19, Next.js 15 (App Router, Server Components, Server Actions), Tailwind CSS 3, lucide-react |
+| Front-end | React 19, Next.js 16 (App Router, Server Components, Server Actions), Tailwind CSS 4, lucide-react |
 | Back-end | Server Actions do Next.js + Supabase (PostgREST) |
 | Banco de dados | PostgreSQL (Supabase) com Row Level Security |
 | Autenticação | Supabase Auth (e-mail/senha) via `@supabase/ssr` com cookies |
