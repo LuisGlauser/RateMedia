@@ -8,7 +8,7 @@
 
 [![CI](https://github.com/LuisGlauser/RateMedia/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/LuisGlauser/RateMedia/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/tag/LuisGlauser/RateMedia?label=vers%C3%A3o&color=7c5cd6)](CHANGELOG.md)
-![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=fff)
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=fff)
@@ -57,11 +57,11 @@ Projeto final da disciplina de **DevOps — Fatec**, construído com integraçã
 
 | Camada | Tecnologias |
 | --- | --- |
-| Aplicação | Next.js 15 (App Router, Server Components, Server Actions), React 19, Tailwind CSS |
+| Aplicação | Next.js 16 (App Router, Server Components, Server Actions), React 19, Tailwind CSS 4 |
 | Dados e autenticação | Supabase — PostgreSQL com Row Level Security e Auth |
 | Integrações | AniList (GraphQL), Jikan (MyAnimeList) e TMDB |
 | Testes | Vitest (unitários e integração), Playwright (E2E), teste de carga em Node |
-| DevOps | GitHub Actions, Vercel, Docker e Docker Compose, Dependabot |
+| DevOps | GitHub Actions, Vercel, Docker e Docker Compose, Dependabot, CodeQL, gitleaks |
 
 ## 🏗️ Arquitetura
 
@@ -73,16 +73,24 @@ Mais detalhes em [Arquitetura](public/docs/md/05-arquitetura.md), [Modelo de dad
 
 ## ✅ Qualidade e CI/CD
 
-Cada *pull request* passa pela pipeline do GitHub Actions antes de chegar à `main`:
+Cada *pull request* passa pela pipeline do GitHub Actions antes de chegar à `main`. Os jobs rodam em paralelo e o job **CI OK** consolida o resultado de todos, servindo de verificação obrigatória da branch protegida:
 
 ```mermaid
 flowchart LR
-  PR[Pull request] --> Q[Lint · tipos · unitários · integração · build]
+  PR[Pull request] --> Q[Lint · tipos · unitários · integração]
+  PR --> B[Build demo e configurado]
+  PR --> D[Imagem Docker + smoke test]
+  PR --> S[Segurança: gitleaks · npm audit · CodeQL]
   Q --> E2E[E2E com Playwright]
   Q --> P[Performance: smoke e carga]
-  E2E --> M[Merge na main]
-  P --> M
+  E2E --> OK{CI OK}
+  P --> OK
+  B --> OK
+  D --> OK
+  S --> OK
+  OK --> M[Merge na main]
   M --> V[Deploy na Vercel]
+  V --> PD[Smoke test pós-deploy]
 ```
 
 | Nível | Ferramenta | Cobertura |
@@ -91,6 +99,9 @@ flowchart LR
 | Integração | Vitest | Server Actions, middleware e camada de dados com Supabase simulado |
 | Ponta a ponta | Playwright | Fluxos reais no navegador: home, busca, filtros, login, campanhas |
 | Performance | Node | Latência p95, vazão e taxa de erros com limites que reprovam a pipeline |
+| Contêiner | Docker | Build da imagem e verificação de que o contêiner sobe e responde |
+| Segurança | gitleaks, npm audit, CodeQL | Segredos no histórico, dependências vulneráveis e análise estática do código |
+| Pós-deploy | GitHub Actions | Rotas principais do site publicado respondendo após cada deploy |
 
 ## 📖 Documentação
 
@@ -122,10 +133,11 @@ Leia o [guia de contribuição](CONTRIBUTING.md) e o [código de conduta](CODE_O
 
 <table>
   <tr>
-    <td align="center" width="25%"><a href="https://github.com/LuisGlauser"><img src="https://github.com/LuisGlauser.png" width="88" alt="LuisGlauser" /><br /><b>Luís Felipe Glauser Lucas</b></a><br /><sub>Telas, Supabase e integrações com APIs</sub></td>
-    <td align="center" width="25%"><a href="https://github.com/FelipeFDSDev"><img src="https://github.com/FelipeFDSDev.png" width="88" alt="FelipeFDSDev" /><br /><b>Felipe Ferreira de Souza</b></a><br /><sub>Docker e containerização</sub></td>
-    <td align="center" width="25%"><a href="https://github.com/gabrieldasilva88188"><img src="https://github.com/gabrieldasilva88188.png" width="88" alt="gabrieldasilva88188" /><br /><b>@gabrieldasilva88188</b></a><br /><sub>Testes unitários, integração, E2E e performance</sub></td>
-    <td align="center" width="25%"><a href="https://github.com/Dracon-46"><img src="https://github.com/Dracon-46.png" width="88" alt="Dracon-46" /><br /><b>Arthur Gaspare Camzano</b></a><br /><sub>Documentação e padronização do repositório</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/LuisGlauser"><img src="https://github.com/LuisGlauser.png" width="88" alt="LuisGlauser" /><br /><b>Luís Felipe Glauser Lucas</b></a><br /><sub>Telas, Supabase e integrações com APIs</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/FelipeFDSDev"><img src="https://github.com/FelipeFDSDev.png" width="88" alt="FelipeFDSDev" /><br /><b>Felipe Ferreira de Souza</b></a><br /><sub>Docker e containerização</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/gabrieldasilva88188"><img src="https://github.com/gabrieldasilva88188.png" width="88" alt="gabrieldasilva88188" /><br /><b>Gabriel da Silva</b></a><br /><sub>Testes unitários, integração, E2E e performance</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/GMaruccio"><img src="https://github.com/GMaruccio.png" width="88" alt="GMaruccio" /><br /><b>Giovanni Camargo Maruccio</b></a><br /><sub>Pipeline de CI/CD, segurança e pós-deploy</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/Dracon-46"><img src="https://github.com/Dracon-46.png" width="88" alt="Dracon-46" /><br /><b>Arthur Gaspare Camzano</b></a><br /><sub>Documentação e padronização do repositório</sub></td>
   </tr>
 </table>
 
