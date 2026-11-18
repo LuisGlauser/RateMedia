@@ -1,81 +1,143 @@
 name: CI
 
+# Integração contínua do RateMedia.
+# Roda em push e pull request para main/develop. O job final "CI OK" consolida
+# todos os outros: use-o como check obrigatório na proteção da branch main.
+# O deploy é feito pela integração Git da Vercel (preview em PR, produção na
+# main); a verificação do site publicado está em post-deploy.yml.
+
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
 
 jobs:
-  # 1) Qualidade + testes unitários e de integração + build
-  build-and-test:
-    name: Lint, tipos, unitários, integração e build
+  # ───────────────────────── Qualidade de código ─────────────────────────
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: npm run lint
 
-      - uses: actions/setup-node@v7
+  typecheck:
+    name: Checagem de tipos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: npm run typecheck
+
+  # ───────────────────────────── Testes Vitest ───────────────────────────
+  unit:
+    name: Testes unitários
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: npm run test:unit
+
+  integration:
+    name: Testes de integração
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: npm run test:integration
+
+  # ─────────────────────────────── Build ─────────────────────────────────
+  # demo:       sem variáveis do Supabase (catálogo de demonstração).
+  # configured: com variáveis (placeholders), como em produção na Vercel.
+  build:
+    name: Build (${{ matrix.mode }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mode: demo
+            supabase_url: ""
+            supabase_key: ""
+          - mode: configured
+            supabase_url: https://placeholder.supabase.co
+            supabase_key: placeholder-anon-key
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+
+      - name: Cache do Next.js
+        uses: actions/cache@v6
         with:
-          node-version: 22
-          cache: npm
+          path: .next/cache
+          key: nextjs-${{ matrix.mode }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'next.config.mjs', 'tailwind.config.ts') }}
+          restore-keys: |
+            nextjs-${{ matrix.mode }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
 
-      - name: Instalar dependências
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Checagem de tipos
-        run: npm run typecheck
-
-      - name: Testes unitários
-        run: npm run test:unit
-
-      - name: Testes de integração
-        run: npm run test:integration
-
-      - name: Build
+      - name: Build de produção
         run: npm run build
         env:
-          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          NEXT_PUBLIC_SUPABASE_URL: ${{ matrix.supabase_url }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ matrix.supabase_key }}
 
-      - name: Auditoria de dependências
-        run: npm audit --audit-level=high
-        continue-on-error: true
-
-  # 2) Testes E2E no navegador (Playwright) contra o build de produção.
-  #    O build é feito SEM Supabase (modo demonstração): dados previsíveis e nenhum banco real alterado.
+  # ───────────────────────── Testes E2E (Playwright) ─────────────────────
+  # Build em modo demonstração (sem Supabase): dados previsíveis e nenhum
+  # banco real alterado. Só roda depois das verificações rápidas passarem.
   e2e:
     name: Testes E2E (Playwright)
-    needs: build-and-test
+    needs: [lint, typecheck, unit, integration]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
 
-      - uses: actions/setup-node@v7
+      - name: Cache do Next.js
+        uses: actions/cache@v6
         with:
-          node-version: 22
-          cache: npm
-
-      - name: Instalar dependências
-        run: npm ci
-
-      - name: Instalar navegador (Chromium)
-        run: npx playwright install --with-deps chromium
+          path: .next/cache
+          key: nextjs-demo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'next.config.mjs', 'tailwind.config.ts') }}
+          restore-keys: |
+            nextjs-demo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
 
       - name: Build (modo demonstração)
         run: npm run build
+
+      - name: Versão do Playwright
+        id: pw
+        run: echo "version=$(npx playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache dos navegadores
+        id: pw-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      - name: Instalar Chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Instalar dependências do sistema do Chromium
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
 
       - name: Testes E2E
         run: npm run test:e2e
@@ -85,28 +147,31 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            test-results/
           retention-days: 14
+          if-no-files-found: ignore
 
-  # 3) Testes de performance: latência (p95), volume (req/s) e taxa de erros.
+  # ─────────────────────────── Performance ───────────────────────────────
   performance:
     name: Testes de performance
-    needs: build-and-test
+    needs: [lint, typecheck, unit, integration]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      NEXT_TELEMETRY_DISABLED: 1
       BASE_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
 
-      - uses: actions/setup-node@v7
+      - name: Cache do Next.js
+        uses: actions/cache@v6
         with:
-          node-version: 22
-          cache: npm
-
-      - name: Instalar dependências
-        run: npm ci
+          path: .next/cache
+          key: nextjs-demo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'next.config.mjs', 'tailwind.config.ts') }}
+          restore-keys: |
+            nextjs-demo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
 
       - name: Build (modo demonstração)
         run: npm run build
@@ -115,7 +180,7 @@ jobs:
         run: |
           npm run start > server.log 2>&1 &
           for i in $(seq 1 60); do
-            curl -sf -o /dev/null "$BASE_URL" && echo "Servidor no ar" && exit 0
+            if curl -sf -o /dev/null "$BASE_URL"; then echo "Servidor no ar"; exit 0; fi
             sleep 1
           done
           echo "Servidor não respondeu"; cat server.log; exit 1
@@ -139,6 +204,114 @@ jobs:
             tests/performance/results/
             server.log
           retention-days: 14
+          if-no-files-found: ignore
 
-# Deploy: a Vercel faz o deploy automático ao conectar este repositório
-# (previews em Pull Requests e produção na branch main).
+  # ───────────────────────────── Docker ──────────────────────────────────
+  docker:
+    name: Imagem Docker (build + smoke test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build da imagem
+        run: docker build --tag ratemedia:ci .
+
+      - name: Subir container e checar saúde
+        run: |
+          docker run -d --name ratemedia -p 3000:3000 ratemedia:ci
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null http://localhost:3000; then echo "Container saudável"; exit 0; fi
+            sleep 1
+          done
+          echo "Container não respondeu"; docker logs ratemedia; exit 1
+
+      - name: Tamanho da imagem
+        if: always()
+        run: docker image ls ratemedia:ci
+
+  # ────────────────────────────── Segurança ──────────────────────────────
+  secrets-scan:
+    name: Varredura de segredos (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      # Gratuito em repositório de conta pessoal. Se o repo for movido para uma
+      # organização, é preciso definir o secret GITLEAKS_LICENSE.
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  audit:
+    name: Auditoria de dependências (npm audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - name: npm audit (dependências de produção)
+        env:
+          AUDIT_BLOCKING: ${{ vars.AUDIT_BLOCKING }}
+        run: |
+          set +e
+          npm audit --omit=dev --audit-level=high | tee audit.txt
+          code=${PIPESTATUS[0]}
+          {
+            echo "### npm audit (dependências de produção, nível high+)"
+            echo '```'
+            cat audit.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$code" -ne 0 ]; then
+            echo "::warning title=npm audit::Vulnerabilidades high/critical encontradas. Veja o resumo do job."
+            # Para bloquear a pipeline: Settings > Variables > AUDIT_BLOCKING = true
+            if [ "$AUDIT_BLOCKING" = "true" ]; then exit 1; fi
+          fi
+          exit 0
+
+  dependency-review:
+    name: Revisão de dependências do PR
+    # Exige o grafo de dependências (ativo por padrão em repositórios públicos).
+    if: github.event_name == 'pull_request' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+
+  # ─────────────────── Portão único (check obrigatório da main) ──────────
+  ci-ok:
+    name: CI OK
+    if: always()
+    needs:
+      - lint
+      - typecheck
+      - unit
+      - integration
+      - build
+      - e2e
+      - performance
+      - docker
+      - secrets-scan
+      - audit
+      - dependency-review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar resultado dos jobs
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Resultados: $RESULTS"
+          for r in $RESULTS; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
+              echo "::error::Algum job da CI falhou ou foi cancelado."
+              exit 1
+            fi
+          done
+          echo "Todas as verificações passaram."
