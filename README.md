@@ -137,7 +137,7 @@ Leia o [guia de contribuição](CONTRIBUTING.md) e o [código de conduta](CODE_O
     <td align="center" width="20%"><a href="https://github.com/FelipeFDSDev"><img src="https://github.com/FelipeFDSDev.png" width="88" alt="FelipeFDSDev" /><br /><b>Felipe Ferreira de Souza</b></a><br /><sub>Docker e containerização</sub></td>
     <td align="center" width="20%"><a href="https://github.com/gabrieldasilva88188"><img src="https://github.com/gabrieldasilva88188.png" width="88" alt="gabrieldasilva88188" /><br /><b>Gabriel da Silva</b></a><br /><sub>Testes unitários, integração, E2E e performance</sub></td>
     <td align="center" width="20%"><a href="https://github.com/GMaruccio"><img src="https://github.com/GMaruccio.png" width="88" alt="GMaruccio" /><br /><b>Giovanni Camargo Maruccio</b></a><br /><sub>Pipeline de CI/CD, segurança e pós-deploy</sub></td>
-    <td align="center" width="20%"><a href="https://github.com/Dracon-46"><img src="https://github.com/Dracon-46.png" width="88" alt="Dracon-46" /><br /><b>Arthur Gaspare Camzano</b></a><br /><sub>Documentação e padronização do repositório</sub></td>
+    <td align="center" width="20%"><a href="https://github.com/Dracon-46"><img src="https://github.com/Dracon-46.png" width="88" alt="Dracon-46" /><br /><b>Arthur Gaspare Camzano</b></a><br /><sub>Documentação, padronização do repositório e deploy na Vercel</sub></td>
   </tr>
 </table>
 
