@@ -1,0 +1,76 @@
+name: Pós-deploy
+
+# Verifica o site publicado pela integração Git da Vercel (preview em PR,
+# produção na main). A Vercel registra cada deploy no GitHub e este workflow
+# reage ao evento "deployment_status".
+#
+# Atenção: workflows de deployment_status usam a versão do arquivo que está na
+# branch padrão (main). Só passa a valer depois do merge.
+#
+# Também pode ser rodado à mão (Actions > Pós-deploy > Run workflow) com uma URL,
+# útil para testar o workflow sem esperar um deploy.
+#
+# Opcional: secret VERCEL_AUTOMATION_BYPASS_SECRET permite testar deploys
+# protegidos pela Vercel (Deployment Protection). Sem ele, um 401/403 vira
+# apenas um aviso.
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "URL a testar, por exemplo https://ratemedia.vercel.app"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke test do site publicado
+    if: github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Testar rotas principais
+        env:
+          URL: ${{ inputs.url || github.event.deployment_status.target_url || github.event.deployment_status.environment_url }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          DEPLOY_ENV: ${{ github.event.deployment.environment || 'manual' }}
+        run: |
+          URL="${URL%/}"
+          echo "Ambiente: $DEPLOY_ENV"
+          echo "URL: $URL"
+          if [ -z "$URL" ]; then echo "::error::URL do deploy não encontrada"; exit 1; fi
+
+          check() {
+            local path="$1" code=000
+            local args=(-s -o /dev/null -w '%{http_code}' --max-time 20)
+            if [ -n "$BYPASS" ]; then args+=(-H "x-vercel-protection-bypass: $BYPASS"); fi
+            for i in 1 2 3 4 5; do
+              code=$(curl "${args[@]}" "$URL$path" || echo 000)
+              if [ "$code" = "200" ]; then echo "OK  $path -> 200"; return 0; fi
+              if { [ "$code" = "401" ] || [ "$code" = "403" ]; } && [ -z "$BYPASS" ]; then
+                echo "::warning title=Smoke test::$path retornou $code (Deployment Protection da Vercel). Defina VERCEL_AUTOMATION_BYPASS_SECRET para validar deploys protegidos."
+                return 0
+              fi
+              sleep 5
+            done
+            echo "::error::$path retornou $code após 5 tentativas"
+            return 1
+          }
+
+          failed=0
+          for p in / /busca /login /docs; do
+            check "$p" || failed=1
+          done
+
+          {
+            echo "### Smoke test ($DEPLOY_ENV)"
+            echo ""
+            echo "- URL: $URL"
+            if [ "$failed" -eq 0 ]; then echo "- Resultado: ok"; else echo "- Resultado: falhou"; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$failed"

@@ -1,0 +1,35 @@
+name: CodeQL
+
+# Análise estática de segurança (SAST). Gratuita em repositórios públicos;
+# em privados exige GitHub Advanced Security, por isso o job é ignorado neles.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: "0 8 * * 1" # segundas, 05:00 em Brasília
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Análise CodeQL
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          build-mode: none
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:javascript-typescript
