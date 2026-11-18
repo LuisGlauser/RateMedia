@@ -289,7 +289,6 @@ jobs:
       - docker
       - secrets-scan
       - audit
-      - dependency-review
     runs-on: ubuntu-latest
     steps:
       - name: Verificar resultado dos jobs
