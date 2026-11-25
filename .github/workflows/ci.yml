@@ -3,8 +3,9 @@ name: CI
 # Integração contínua do RateMedia.
 # Roda em push e pull request para main/develop. O job final "CI OK" consolida
 # todos os outros: use-o como check obrigatório na proteção da branch main.
-# O deploy é feito pela integração Git da Vercel (preview em PR, produção na
-# main); a verificação do site publicado está em post-deploy.yml.
+# O deploy de produção é o último job ("Deploy de produção"): só roda em push
+# na main e só depois que o "CI OK" passar. Se algum teste falhar, nada é
+# publicado e o site continua na versão anterior.
 
 on:
   push:
@@ -303,3 +304,97 @@ jobs:
             fi
           done
           echo "Todas as verificações passaram."
+
+  # ───────────────────── Deploy de produção (Vercel) ─────────────────────
+  # Só roda em push na main e só se o "CI OK" passar (qualquer falha acima
+  # bloqueia o deploy). Etapas:
+  #   1. build na própria pipeline: se falhar, nada é publicado;
+  #   2. deploy sem apontar o domínio (--skip-domain);
+  #   3. promove a versão nova para ratemedia.vercel.app;
+  #   4. smoke test no domínio público: se falhar, volta para a versão anterior.
+  # Requer o secret VERCEL_TOKEN (Settings > Secrets and variables > Actions).
+  deploy:
+    name: Deploy de produção (Vercel)
+    needs: ci-ok
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://ratemedia.vercel.app
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      VERCEL_ORG_ID: team_Oztc5A4FQIf5qkD2IrKr2Lbk
+      VERCEL_PROJECT_ID: prj_JnXMWfVoQQbexpPTKZHJLa5eLI0q
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_CLI: vercel@65.14.0
+      SITE_URL: https://ratemedia.vercel.app
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+
+      - name: Conferir credencial da Vercel
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error title=Deploy::Secret VERCEL_TOKEN não configurado. Nada foi publicado."
+            exit 1
+          fi
+
+      - name: Versão atual em produção
+        id: prev
+        run: |
+          prev=$(npx --yes "$VERCEL_CLI" inspect "$SITE_URL" --json --token "$VERCEL_TOKEN" | jq -r '.id // .uid // .url')
+          echo "Versão atual: $prev"
+          echo "deployment=$prev" >> "$GITHUB_OUTPUT"
+
+      - name: Configuração do projeto
+        run: npx --yes "$VERCEL_CLI" pull --yes --environment=production --token "$VERCEL_TOKEN"
+
+      - name: Build de produção
+        run: npx --yes "$VERCEL_CLI" build --prod --token "$VERCEL_TOKEN"
+
+      - name: Deploy (sem trocar o domínio ainda)
+        id: deploy
+        run: |
+          url=$(npx --yes "$VERCEL_CLI" deploy --prebuilt --prod --skip-domain --token "$VERCEL_TOKEN")
+          echo "Nova versão: $url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Promover para produção
+        id: promote
+        run: npx --yes "$VERCEL_CLI" promote "${{ steps.deploy.outputs.url }}" --yes --token "$VERCEL_TOKEN"
+
+      - name: Smoke test do site publicado
+        id: smoke
+        run: |
+          failed=0
+          for path in / /busca /campanhas /login /cadastro /docs /docs/diagramas; do
+            code=000
+            for i in 1 2 3 4 5; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$SITE_URL$path" || echo 000)
+              [ "$code" = "200" ] && break
+              sleep 5
+            done
+            if [ "$code" = "200" ]; then echo "OK    $path"; else echo "FALHA $path -> $code"; failed=1; fi
+          done
+          exit "$failed"
+
+      - name: Voltar para a versão anterior
+        if: failure() && steps.promote.outcome != 'skipped' && steps.prev.outputs.deployment != ''
+        run: |
+          echo "::error title=Deploy::Falha após o deploy. Voltando para ${{ steps.prev.outputs.deployment }}."
+          npx --yes "$VERCEL_CLI" rollback "${{ steps.prev.outputs.deployment }}" --yes --token "$VERCEL_TOKEN"
+
+      - name: Resumo
+        if: always()
+        run: |
+          {
+            echo "### Deploy de produção"
+            echo ""
+            echo "- Commit: \`${GITHUB_SHA::7}\`"
+            echo "- Versão anterior: ${{ steps.prev.outputs.deployment || 'n/d' }}"
+            echo "- Nova versão: ${{ steps.deploy.outputs.url || 'não publicada' }}"
+            echo "- Smoke test: ${{ steps.smoke.outcome || 'não executado' }}"
+          } >> "$GITHUB_STEP_SUMMARY"
