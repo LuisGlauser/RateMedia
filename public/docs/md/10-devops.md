@@ -40,8 +40,8 @@ O deploy de produção é feito pela própria pipeline, no job **Deploy de produ
 
 1. Só roda em push na `main` e só depois que o **CI OK** passar. Se qualquer teste, build, verificação de segurança ou o Docker falhar, **nada é publicado** e o site continua na versão anterior.
 2. O build roda dentro da pipeline (`vercel build`). Se ele falhar, nenhum deploy é criado.
-3. A versão nova é enviada sem trocar o domínio (`vercel deploy --skip-domain`) e só então promovida (`vercel promote`).
-4. Um smoke test verifica as rotas principais no domínio público. Se alguma não responder, a pipeline executa `vercel rollback` e o site volta para a versão que estava no ar.
+3. A versão nova é enviada sem trocar o domínio (`vercel deploy --skip-domain`) e só então promovida (a API da Vercel).
+4. Um smoke test verifica as rotas principais no domínio público. Se alguma não responder, a pipeline promove de volta a versão anterior pela API da Vercel e o site volta para a versão que estava no ar.
 5. Cada deploy aparece no ambiente **production** do GitHub, com o resumo (commit, versão anterior, versão nova e resultado do smoke test).
 
 Requisitos: secret `VERCEL_TOKEN` no repositório e variáveis de ambiente cadastradas no projeto da Vercel (*Settings → Environment Variables*).

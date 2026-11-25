@@ -342,11 +342,14 @@ jobs:
             exit 1
           fi
 
+      # Promoção e rollback usam a API REST da Vercel: os comandos
+      # "vercel promote/rollback/inspect" falham com token de time ("User not found").
       - name: Versão atual em produção
         id: prev
         run: |
-          prev=$(npx --yes "$VERCEL_CLI" inspect "$SITE_URL" --json --token "$VERCEL_TOKEN" | jq -r '.id // .uid // .url')
-          echo "Versão atual: $prev"
+          prev=$(curl -sf -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v4/aliases/${SITE_URL#https://}?teamId=$VERCEL_ORG_ID" | jq -r '.deploymentId // empty')
+          echo "Versão atual: ${prev:-desconhecida}"
           echo "deployment=$prev" >> "$GITHUB_OUTPUT"
 
       - name: Configuração do projeto
@@ -364,7 +367,19 @@ jobs:
 
       - name: Promover para produção
         id: promote
-        run: npx --yes "$VERCEL_CLI" promote "${{ steps.deploy.outputs.url }}" --yes --token "$VERCEL_TOKEN"
+        env:
+          NEW_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          api() { curl -sf -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" "$@"; }
+          new_id=$(api "https://api.vercel.com/v13/deployments/${NEW_URL#https://}?teamId=$VERCEL_ORG_ID" | jq -r '.id')
+          echo "Promovendo $new_id"
+          api -X POST "https://api.vercel.com/v10/projects/$VERCEL_PROJECT_ID/promote/$new_id?teamId=$VERCEL_ORG_ID" -o /dev/null
+          for i in $(seq 1 24); do
+            current=$(api "https://api.vercel.com/v4/aliases/${SITE_URL#https://}?teamId=$VERCEL_ORG_ID" | jq -r '.deploymentId // empty')
+            if [ "$current" = "$new_id" ]; then echo "Domínio aponta para a versão nova."; exit 0; fi
+            sleep 5
+          done
+          echo "::error::A promoção não terminou a tempo."; exit 1
 
       - name: Smoke test do site publicado
         id: smoke
@@ -383,9 +398,13 @@ jobs:
 
       - name: Voltar para a versão anterior
         if: failure() && steps.promote.outcome != 'skipped' && steps.prev.outputs.deployment != ''
+        env:
+          PREV_ID: ${{ steps.prev.outputs.deployment }}
         run: |
-          echo "::error title=Deploy::Falha após o deploy. Voltando para ${{ steps.prev.outputs.deployment }}."
-          npx --yes "$VERCEL_CLI" rollback "${{ steps.prev.outputs.deployment }}" --yes --token "$VERCEL_TOKEN"
+          echo "::error title=Deploy::Falha após o deploy. Voltando para $PREV_ID."
+          curl -sf -X POST -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v10/projects/$VERCEL_PROJECT_ID/promote/$PREV_ID?teamId=$VERCEL_ORG_ID" -o /dev/null
+          echo "Site voltou para a versão anterior."
 
       - name: Resumo
         if: always()

@@ -28,7 +28,7 @@ O deploy é o último job da CI e só roda em push na `main`, depois que o **CI 
 1. Se qualquer teste falhar, **nada é publicado** e o site continua na versão anterior.
 2. O build roda na pipeline; se falhar, nenhum deploy é criado.
 3. A versão nova é enviada sem trocar o domínio e só depois promovida.
-4. Um smoke test confere as rotas principais; se alguma falhar, a pipeline volta o site para a versão anterior (`vercel rollback`).
+4. Um smoke test confere as rotas principais; se alguma falhar, a pipeline volta o site para a versão anterior (pela API da Vercel).
 
 Para funcionar, o repositório precisa do secret `VERCEL_TOKEN` (Settings → Secrets and variables → Actions) e a Vercel precisa das variáveis `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `TMDB_API_READ_TOKEN`.
 
