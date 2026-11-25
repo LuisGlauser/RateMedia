@@ -21,6 +21,7 @@ Arquivo: `.github/workflows/ci.yml` — executa em *push* e *pull request* para 
 | **Varredura de segredos** | — | gitleaks em todo o histórico |
 | **Auditoria de dependências** | — | `npm audit` das dependências de produção, com resumo no job (bloqueante se `AUDIT_BLOCKING=true`) |
 | **CI OK** | todos | Falha se qualquer job falhar ou for cancelado; é o check obrigatório da `main` |
+| **Deploy de produção** | CI OK (só em push na `main`) | Build → deploy sem trocar o domínio → promove para `ratemedia.vercel.app` → smoke test; se o smoke falhar, volta para a versão anterior |
 
 Outros workflows:
 
@@ -35,11 +36,15 @@ Sem as variáveis do Supabase, o build usa o catálogo de demonstração, garant
 
 **Produção:** https://ratemedia.vercel.app
 
-- O repositório é importado na Vercel (framework **Next.js**, comando `npm run build`).
-- Cada *pull request* gera um **deploy de preview** com URL própria.
-- O *merge* na `main` publica em **produção**.
-- Variáveis de ambiente são configuradas no painel da Vercel (*Settings → Environment Variables*).
-- A central de documentação fica disponível em **`/docs`** no mesmo deploy.
+O deploy de produção é feito pela própria pipeline, no job **Deploy de produção**, e segue estas regras:
+
+1. Só roda em push na `main` e só depois que o **CI OK** passar. Se qualquer teste, build, verificação de segurança ou o Docker falhar, **nada é publicado** e o site continua na versão anterior.
+2. O build roda dentro da pipeline (`vercel build`). Se ele falhar, nenhum deploy é criado.
+3. A versão nova é enviada sem trocar o domínio (`vercel deploy --skip-domain`) e só então promovida (`vercel promote`).
+4. Um smoke test verifica as rotas principais no domínio público. Se alguma não responder, a pipeline executa `vercel rollback` e o site volta para a versão que estava no ar.
+5. Cada deploy aparece no ambiente **production** do GitHub, com o resumo (commit, versão anterior, versão nova e resultado do smoke test).
+
+Requisitos: secret `VERCEL_TOKEN` no repositório e variáveis de ambiente cadastradas no projeto da Vercel (*Settings → Environment Variables*).
 
 ## 10.4 Docker
 

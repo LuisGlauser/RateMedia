@@ -89,8 +89,10 @@ flowchart LR
   D --> OK
   S --> OK
   OK --> M[Merge na main]
-  M --> V[Deploy na Vercel]
-  V --> PD[Smoke test pós-deploy]
+  M --> V[Deploy na Vercel<br/>só com CI OK]
+  V --> PD{Smoke test}
+  PD -- ok --> PROD[Produção atualizada]
+  PD -- falha --> RB[Volta para a versão anterior]
 ```
 
 | Nível | Ferramenta | Cobertura |
@@ -101,7 +103,7 @@ flowchart LR
 | Performance | Node | Latência p95, vazão e taxa de erros com limites que reprovam a pipeline |
 | Contêiner | Docker | Build da imagem e verificação de que o contêiner sobe e responde |
 | Segurança | gitleaks, npm audit, CodeQL | Segredos no histórico, dependências vulneráveis e análise estática do código |
-| Pós-deploy | GitHub Actions | Rotas principais do site publicado respondendo após cada deploy |
+| Deploy | Vercel CLI | Publica só se todos os jobs passarem; se o site não responder depois do deploy, volta sozinho para a versão anterior |
 
 ## 📖 Documentação
 
