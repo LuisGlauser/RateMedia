@@ -13,5 +13,16 @@ export default defineConfig([
       ],
     },
   },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    // Relatórios gerados pelos testes (Playwright e performance)
+    "playwright-report/**",
+    "test-results/**",
+    "blob-report/**",
+    "tests/performance/results/**",
+    ".vercel/**",
+  ]),
 ]);
