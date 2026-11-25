@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/supabase/user";
 
 export function average(values: (number | null)[]): number | null {
   const nums = values.filter((v): v is number => typeof v === "number");
@@ -39,13 +40,8 @@ export async function campaignRatings(ids: string[]): Promise<Map<string, number
 }
 
 export async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  return data?.role === "admin" ? user : null;
+  const profile = await getCurrentProfile();
+  return profile?.role === "admin" ? profile.user : null;
 }
 
 export interface Stats {
@@ -94,13 +90,9 @@ export async function campaignStats(ids: string[]): Promise<Map<string, Stats>> 
 
 /** Usuário logado e se é admin (null se não houver sessão). */
 export async function getViewer() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  return { user, isAdmin: data?.role === "admin" };
+  const profile = await getCurrentProfile();
+  if (!profile) return null;
+  return { user: profile.user, isAdmin: profile.role === "admin" };
 }
 
 /** Só o autor da campanha ou um admin podem editá-la/excluí-la. */

@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/user";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { MediaType, ReviewKind, UserStatus } from "@/types";
 
@@ -174,11 +175,9 @@ export const likeKey = (kind: ReviewKind, id: string) => `${kind}:${id}`;
 export async function getViewerLikes(
   rows: Pick<FeedRow, "kind" | "ref_id">[],
 ): Promise<{ userId: string | null; liked: string[] }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return { userId: null, liked: [] };
+  const supabase = await createClient();
 
   const entryIds = rows.filter((r) => r.kind === "media").map((r) => r.ref_id);
   const campaignIds = rows.filter((r) => r.kind === "campaign").map((r) => r.ref_id);

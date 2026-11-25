@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, SlidersHorizontal, Search, X } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/user";
 import { campaignStats, mediaStats } from "@/lib/data";
 import { GENRES, MEDIA_TYPES, USER_STATUSES, statusLabel, STATUS_DOT } from "@/lib/constants";
 import { DEMO_POPULAR, DEMO_TRENDING } from "@/lib/demo-data";
@@ -84,9 +85,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       let media = ((data ?? []) as Media[]).filter((m) => (m.publish_status ?? "published") === "published");
 
       if (status) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const user = await getCurrentUser();
         if (user) {
           const { data: entries } = await supabase
             .from("library_entries")

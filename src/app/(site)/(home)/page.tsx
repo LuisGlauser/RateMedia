@@ -149,8 +149,22 @@ export default async function HomePage({
     featuredLists = listRows;
 
     const media = (mediaRows ?? []) as Media[];
+    const campaigns = (campRows ?? []) as (Campaign & { profiles: { username: string } | null })[];
+    // Spotlight: #1 do ranking semanal ou, sem ranking, a obra mais recente.
+    spotlightId = media.length > 0 ? (trendingRows[0]?.id ?? media[0].id) : null;
+
+    // Notas das obras, contexto do usuário e notas das campanhas não dependem
+    // umas das outras: rodam em paralelo (antes eram três idas seguidas ao banco).
+    const [ratings, viewerData, cr] = await Promise.all([
+      media.length > 0 ? mediaRatings(media.map((m) => m.id)) : Promise.resolve(new Map<string, number | null>()),
+      getHomeViewer({ spotlightId, reviews, curatorIds: curators.map((c) => c.id) }),
+      campaigns.length > 0
+        ? campaignRatings(campaigns.map((c) => c.id))
+        : Promise.resolve(new Map<string, number | null>()),
+    ]);
+    viewer = viewerData;
+
     if (media.length > 0) {
-      const ratings = await mediaRatings(media.map((m) => m.id));
       const posters = media.map((m) => toPoster(m, ratings.get(m.id) ?? null));
       popular = posters;
 
@@ -188,18 +202,9 @@ export default async function HomePage({
           engagement_delta_pct: null,
         });
       }
-      spotlightId = spotlight.id;
     }
 
-    viewer = await getHomeViewer({
-      spotlightId,
-      reviews,
-      curatorIds: curators.map((c) => c.id),
-    });
-
-    const campaigns = (campRows ?? []) as (Campaign & { profiles: { username: string } | null })[];
     if (campaigns.length > 0) {
-      const cr = await campaignRatings(campaigns.map((c) => c.id));
       rpg = campaigns.map((c, i) => ({
         id: c.id,
         title: c.title,

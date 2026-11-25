@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BadgeCheck, BookOpen, ChevronRight, Heart, Medal, Star, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/user";
 import { MEDIA_TYPES, USER_STATUSES, statusLabel } from "@/lib/constants";
 import type { LibraryEntry, Media } from "@/types";
 import LibraryControls from "@/components/obra/LibraryControls";
@@ -27,9 +28,7 @@ export default async function MediaDetail({ params }: { params: Promise<{ id: st
   if (!mediaRow) notFound();
   const media = mediaRow as Media;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const { data: entries } = await supabase
     .from("library_entries")

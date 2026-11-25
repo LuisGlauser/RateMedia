@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Bell, BookmarkPlus, Clapperboard } from "lucide-react";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/supabase/user";
 import { signOut } from "@/app/(site)/(auth)/actions";
 import SearchBar from "./SearchBar";
 import UserMenu from "./UserMenu";
@@ -21,18 +22,10 @@ export default async function Navbar() {
   let isAdmin = false;
 
   if (isSupabaseConfigured()) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, role")
-        .eq("id", user.id)
-        .single();
-      username = profile?.username ?? user.email ?? null;
-      isAdmin = profile?.role === "admin";
+    const profile = await getCurrentProfile();
+    if (profile) {
+      username = profile.username ?? profile.user.email ?? null;
+      isAdmin = profile.role === "admin";
     }
   }
 
