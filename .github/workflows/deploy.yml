@@ -35,7 +35,9 @@ jobs:
     steps:
       - name: Testar rotas principais
         env:
-          URL: ${{ inputs.url || github.event.deployment_status.target_url || github.event.deployment_status.environment_url }}
+          # environment_url é o endereço do site; target_url pode ser o link da
+          # execução no GitHub Actions (deploys feitos pela própria pipeline).
+          URL: ${{ inputs.url || github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
           BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
           DEPLOY_ENV: ${{ github.event.deployment.environment || 'manual' }}
         run: |
